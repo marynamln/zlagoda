@@ -7,8 +7,19 @@ function ProductInStore() {
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState("All Categories");
     const [upc, setUpc] = useState('');
+    const [products, setProducts] = useState([]);
+    const [newProductID, setNewProductID] = useState([]);
+    const [newProductUPC, setNewProductUPC] = useState([]);
+    const [newProductPrice, setNewProductPrice] = useState([]);
+    const [newProductNumber, setNewProductNumber] = useState([]);
+    const [newProductProm, setNewProductProm] = useState([]);
+    const [editedData, setEditedData] = useState([...sortedData]);
+    const [editName, setEditName] = useState(''); 
+    const [editPrice, setEditPrice] = useState('');
+    const [editNumber, setEditNumber] = useState('');
+    const [editProm, setEditProm] = useState('');
 
-    useEffect(()=>{
+    useEffect(() => {
         fetch('http://localhost:8081/categories')
             .then(res => res.json())
             .then(data => {
@@ -21,11 +32,51 @@ function ProductInStore() {
             .then(data => {
                 setData(data);
                 setSortedData(data);
+                setEditedData(data);
             })
             .catch(err => console.log(err));
+
+        fetch('http://localhost:8081/products')
+            .then(res => res.json())
+            .then(data => {
+                setProducts(data);
+            })
+            .catch(err => console.log(err));  
     }, []);
 
-    const handleDelete = id => {
+    const handleEdit = (index) => {
+        const updatedData = [...editedData];
+        updatedData[index].isEditing = true;
+        setEditedData(updatedData);
+        setEditName(updatedData[index].id_product);
+        setEditNumber(updatedData[index].products_number);
+        setEditPrice(updatedData[index].selling_price);
+        setEditProm(updatedData[index].promotional_product);
+    };
+
+    const handleSave = (id) => {
+        fetch(`http://localhost:8081/productsInStore/${id}?prodID=${editName}&price=${editPrice}&number=${editNumber}&prom=${editProm}`, {
+            method: 'POST',
+        })
+        .then(res => {
+            if (res.ok) {
+                const updatedData = [...editedData];
+                setEditedData(updatedData);
+            }
+        })
+        .catch(err => console.log(err.message));
+    
+        fetch('http://localhost:8081/productsInStore')
+            .then(res => res.json())
+            .then(data => {
+                setData(data);
+                setSortedData(data);
+                setEditedData(data);
+            })
+            .catch(err => console.log(err));
+    };
+
+    const handleDelete = (id) => {
         fetch(`http://localhost:8081/productsInStore/${id}`, {
             method: 'DELETE',
         })
@@ -33,6 +84,7 @@ function ProductInStore() {
         .then(() => {
             setData(data.filter(item => item.id_product !== id));
             setSortedData(sortedData.filter(item => item.id_product !== id)); 
+            setEditedData(editedData.filter(item => item.id_product !== id));
         })
         .catch(err => console.log(err));
     };
@@ -47,6 +99,7 @@ function ProductInStore() {
             .then(data => {
                 setData(data);
                 setSortedData(data); 
+                setEditedData(data);
             })
             .catch(err => console.log(err));
     };
@@ -82,8 +135,13 @@ function ProductInStore() {
         } else {
           const filteredData = data.filter(item => item.category_name === event.target.value);
           setSortedData(filteredData);
+          setEditedData(filteredData);
         }
     };
+
+    useEffect(() => {
+        setEditedData([...sortedData]);
+    }, [sortedData]);
 
     const handlePromotionalChange = (event) => {
         const selectedPromotional = event.target.value;
@@ -99,6 +157,7 @@ function ProductInStore() {
                 return true;
             });
             setSortedData(filteredData);
+            setEditedData(filteredData);
         }
     };    
 
@@ -140,6 +199,41 @@ function ProductInStore() {
         printWindow.print();
     };
 
+    const handleAdd = () => {
+        const existingProduct = data.find(product => product.upc === newProductUPC);
+        if (existingProduct) {
+            alert("Product with the same UPC already exists!");
+            setNewProductUPC('');
+            return;
+        }
+
+        fetch(`http://localhost:8081/productsInStore?idProduct=${newProductID}&upc=${newProductUPC}&price=${newProductPrice}&number=${newProductNumber}&prom=${newProductProm}`, {
+            method: 'POST',
+        })
+        .then(res => {
+        if (res.ok) {
+            return res.json();
+        }
+        })
+        .then(() => {
+            setNewProductUPC('');
+            setNewProductID('');
+            setNewProductPrice('');
+            setNewProductNumber('');
+            setNewProductProm('');
+        })
+        .catch(err => console.log(err.message));
+
+        fetch('http://localhost:8081/productsInStore')
+        .then(res => res.json())
+        .then(data => {
+            setData(data);
+            setSortedData(data);
+            setEditedData(data);
+        })
+        .catch(err => console.log(err));
+    };
+
     return (
         <div className="cart-employee container">
             <div className="employee-header">  
@@ -161,8 +255,26 @@ function ProductInStore() {
                 <input type="text" placeholder="Enter UPC" value={upc} onChange={handleUpcChange}></input>
                 <button className="search-button" onClick={searchProductByUpc}>Search</button> 
             </div>
+
             <div className="employee-header">
-                <button className="add-button">Add product</button>
+                <input className="input" type="text" placeholder="New UPC" value={newProductUPC} onChange={(e) => setNewProductUPC(e.target.value)}></input>
+                <select className="input-product-select" value={newProductID} onChange={(e) => setNewProductID(e.target.value)}>
+                    <option>Select product</option>
+                    {products.map((d, i) => (
+                        <option key={i} value={d.id_product}> {d.id_product} - {d.product_name}</option>
+                    ))}
+                </select>
+                <input className="input" type="number" min={0} placeholder="Price" value={newProductPrice} onChange={(e) => setNewProductPrice(e.target.value)}></input>
+                <input className="input" type="number" min={1} placeholder="Number" value={newProductNumber} onChange={(e) => setNewProductNumber(e.target.value)}></input>
+                <select value={newProductProm} onChange={(e) => setNewProductProm(e.target.value)}>
+                    <option value="select-promotional">Is promotional?</option>
+                    <option value="1">Promotional product</option>
+                    <option value="0">Non-promotional product</option>
+                </select>
+                <button className="add-button" onClick={handleAdd}>Add product</button>
+            </div>
+
+            <div className="employee-header">
                 <button className="print-button" onClick={handlePrint}>Print information</button>
                 <button className="sort-button" onClick={sortByProductName}>Sort by product name</button>
                 <button className="sort-button" onClick={sortByAmount}>Sort by amount</button>
@@ -172,20 +284,72 @@ function ProductInStore() {
                     <thead>
                         <tr>
                             <th>UPC</th>
-                            <th>ID</th>
                             <th>Name</th>
                             <th>Category</th>
                             <th>Price</th>
-                            <th>Products number</th>
+                            <th>Amount</th>
                             <th>Promotional</th> 
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {sortedData.map((d,i) => (
+
+                    {editedData.map((d, i) => (
+                        <tr key={i}>
+                            <td>{d.upc}</td>
+                            <td>
+                            {d.isEditing ?
+                                (
+                                  <select value={editName} onChange={(e) => setEditName(e.target.value)}>
+                                        {products.map((data, k) => 
+                                          <option key={k} value={data.id_product}>
+                                          {data.id_product} - {data.product_name}
+                                          </option>
+                                        )}
+                                  </select>
+                                ) : (d.product_name)
+                                }     
+                            </td>
+                            <td>{d.category_name}</td>
+                            <td>
+                                {d.isEditing ?
+                                (<input className="input-categoty" type="number" min={0} value={editPrice} onChange={(e) => setEditPrice(e.target.value)}/>
+                                ) : 
+                                (d.selling_price)
+                                }                                
+                            </td>
+                            <td>
+                                {d.isEditing ?
+                                (<input className="input-categoty" type="number" min={1} value={editNumber} onChange={(e) => setEditNumber(e.target.value)}/>
+                                ) : 
+                                (d.products_number)
+                                }                                
+                            </td>
+                            <td>
+                            {d.isEditing ?
+                                (
+                                  <select value={editProm} onChange={(e) => setEditProm(e.target.value)}>
+                                        <option value="1">1</option>
+                                        <option value="0">0</option>
+                                  </select>
+                                ) : (d.promotional_product)
+                                }     
+                            </td>
+                            <td>
+                                {d.isEditing ? (<button className="save-button" onClick={() => handleSave(d.upc)}>Save</button>
+                                ) : (
+                                    <>
+                                        <button className="edit-button" onClick={() => handleEdit(i)}>Edit</button>
+                                        <button className="delete-button" onClick={() => handleDelete(d.id_product)}>Delete</button>
+                                    </>
+                                )}
+                            </td>
+                        </tr>
+                    ))}
+
+                        {/* {sortedData.map((d,i) => (
                             <tr key={i}>
                                 <td>{d.upc}</td>
-                                <td>{d.id_product}</td>
                                 <td>{d.product_name}</td>
                                 <td>{d.category_name}</td>
                                 <td>{d.selling_price}</td>
@@ -196,7 +360,7 @@ function ProductInStore() {
                                     <button className="delete-button" onClick={() => handleDelete(d.id_product)}>Delete</button>
                                 </td>
                             </tr>
-                        ))}
+                        ))} */}
                     </tbody>
                 </table>
             </div>

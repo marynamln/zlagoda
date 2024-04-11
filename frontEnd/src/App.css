@@ -137,6 +137,7 @@
     border-color: #9a7755;
     color: white;
     border-radius: 5px;
+    margin-left: 5px;
   }
   
   .print-button {
@@ -168,7 +169,8 @@
   }
 
   .edit-button,
-  .info-button {
+  .info-button,
+  .save-button {
     padding: 5px;
     background-color: #cab29a;
     border-color: #cab29a;
@@ -193,6 +195,15 @@
   }
 
   .input {
+    height: 30px;
+    width: 100px;
+    margin-right: 5px;
+  }
+
+  .input-category,
+  .input-product,
+  .input-characteristics,
+  .input-product-select {
     margin-right: 5px;
   }
 

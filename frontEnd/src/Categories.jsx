@@ -5,6 +5,8 @@ function Categories() {
     const [sortedData, setSortedData] = useState([]);
     const [sortDirection, setSortDirection] = useState('asc');
     const [newCategoryName, setNewCategoryName] = useState('');
+    const [editedData, setEditedData] = useState([...sortedData]);
+    const [editName, setEditName] = useState('');    
 
     useEffect(()=>{
         fetch('http://localhost:8081/categories')
@@ -12,9 +14,39 @@ function Categories() {
         .then(data => {
             setData(data);
             setSortedData(data);
+            setEditedData(data);
         })
         .catch(err => console.log(err));
     }, []);
+
+    const handleEdit = (index) => {
+        const updatedData = [...editedData];
+        updatedData[index].isEditing = true;
+        setEditedData(updatedData);
+        setEditName(updatedData[index].category_name);
+    };
+
+    const handleSave = (id) => {
+        fetch(`http://localhost:8081/products/${id}?newCategoryName=${editName}`, {
+            method: 'POST',
+        })
+        .then(res => {
+            if (res.ok) {
+                const updatedData = [...editedData];
+                setEditedData(updatedData);
+            }
+        })
+        .catch(err => console.log(err.message));
+
+        fetch('http://localhost:8081/categories')
+        .then(res => res.json())
+        .then(data => {
+            setData(data);
+            setSortedData(data);
+            setEditedData(data);
+        })
+        .catch(err => console.log(err));
+    };
 
     const handleDeleteCategory = (id) => {
         fetch(`http://localhost:8081/categories/${id}`, {
@@ -25,12 +57,13 @@ function Categories() {
                 return res.json();
             } else if (res.status === 500) {
                 alert("The category cannot be deleted because it contains products.");
-                throw new Error("Cannot delete category as it contains products");
+                return;
             }
         })
         .then(() => {
             setData(data.filter(item => item.category_number !== id));
             setSortedData(sortedData.filter(item => item.category_number !== id));
+            setEditedData(editedData.filter(item => item.category_number !== id));
         })
         .catch(err => console.log(err.message));
     };
@@ -50,6 +83,10 @@ function Categories() {
         setSortedData(sorted);
         setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     };
+
+    useEffect(() => {
+        setEditedData([...sortedData]);
+    }, [sortedData]);    
 
     const handlePrint = () => {
         const printWindow = window.open('', '_blank');
@@ -84,9 +121,9 @@ function Categories() {
         printWindow.print();
     };    
 
-    const handleAddCategory = (newCategoryName) => {
+    const handleAddCategory = () => {
         const formattedCategoryName = newCategoryName.charAt(0).toUpperCase() + newCategoryName.slice(1);
-        fetch(`http://localhost:8081/categories/${formattedCategoryName}`, {
+        fetch(`http://localhost:8081/categories?categoryName=${formattedCategoryName}`, {
             method: 'POST',
         })
         .then(res => {
@@ -104,6 +141,7 @@ function Categories() {
         .then(data => {
             setData(data);
             setSortedData(data);
+            setEditedData(data);
         })
         .catch(err => console.log(err));
     };
@@ -111,9 +149,8 @@ function Categories() {
     return (
         <div className="cart-employee container">
             <div className="employee-header">
-                <input className="input" type="text" placeholder="New category name" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)}></input>
-                <button className="add-button" onClick={() => handleAddCategory(newCategoryName)}>Add category</button>
-                {/* <button className="add-button" onClick={handleAddCategory}>Add category</button> */}
+                <input className="input-category" type="text" placeholder="New category name" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)}></input>
+                <button className="add-button" onClick={handleAddCategory}>Add category</button>
                 <button className="print-button" onClick={handlePrint}>Print information</button>
                 <button className="sort-button" onClick={sortByCategoryName}>Sort by category name</button>
             </div>
@@ -127,16 +164,29 @@ function Categories() {
                         </tr>
                     </thead>
                     <tbody>
-                        {sortedData.map((d,i) => (
-                            <tr key={i}>
-                                <td>{d.category_number}</td>
-                                <td>{d.category_name}</td>
-                                <td>
-                                    <button className="edit-button">Edit</button>
-                                    <button className="delete-button" onClick={() => handleDeleteCategory(d.category_number)}>Delete</button>
-                                </td>
-                            </tr>
-                        ))}
+
+                    {editedData.map((d, i) => (
+                        <tr key={i}>
+                            <td>{d.category_number}</td>
+                            <td>
+                                {d.isEditing ? 
+                                (<input className="input-categoty" type="text" value={editName} onChange={(e) => setEditName(e.target.value)}/>) 
+                                : 
+                                (
+                                    d.category_name
+                                )}
+                            </td>
+                            <td>
+                                {d.isEditing ? (<button className="save-button" onClick={() => handleSave(d.category_number)}>Save</button>
+                                ) : (
+                                    <>
+                                        <button className="edit-button" onClick={() => handleEdit(i)}>Edit</button>
+                                        <button className="delete-button" onClick={() => handleDeleteCategory(d.category_number)}>Delete</button>
+                                    </>
+                                )}
+                            </td>
+                        </tr>
+                    ))}
                     </tbody>
                 </table>
             </div>

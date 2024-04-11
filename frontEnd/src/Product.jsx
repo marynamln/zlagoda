@@ -6,6 +6,13 @@ function Product() {
   const [sortDirection, setSortDirection] = useState('asc');
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const [newProductName, setNewProductName] = useState([]);
+  const [newProductCharacteristics, setNewProductCharacteristics] = useState([]);
+  const [newProductCategory, setNewProductCategory] = useState([]);
+  const [editedData, setEditedData] = useState([...sortedData]);
+  const [editName, setEditName] = useState(''); 
+  const [editCategory, setEditCategory] = useState('');
+  const [editCharacteristics, setEditCharacteristics] = useState('');
 
   useEffect(()=>{
     fetch('http://localhost:8081/categories')
@@ -20,9 +27,41 @@ function Product() {
       .then(data => {
         setData(data);
         setSortedData(data);
+        setEditedData(data);
       })
       .catch(err => console.log(err));
   }, []);
+
+  const handleEdit = (index) => {
+    const updatedData = [...editedData];
+    updatedData[index].isEditing = true;
+    setEditedData(updatedData);
+    setEditName(updatedData[index].product_name);
+    setEditCharacteristics(updatedData[index].characteristics);
+    setEditCategory(updatedData[index].category_number);
+  };
+
+  const handleSave = (id) => {
+    fetch(`http://localhost:8081/products/${id}?name=${editName}&characteristics=${editCharacteristics}&category=${editCategory}`, {
+        method: 'POST',
+    })
+    .then(res => {
+        if (res.ok) {
+            const updatedData = [...editedData];
+            setEditedData(updatedData);
+        }
+    })
+    .catch(err => console.log(err.message));
+
+    fetch('http://localhost:8081/products')
+    .then(res => res.json())
+    .then(data => {
+        setData(data);
+        setSortedData(data);
+        setEditedData(data);
+    })
+    .catch(err => console.log(err));
+};
 
   const handleDelete = id => {
     fetch(`http://localhost:8081/products/${id}`, {
@@ -33,12 +72,13 @@ function Product() {
             return res.json();
         } else if (res.status === 500) {
           alert("The product cannot be deleted because because it is available in the store.");
-          throw new Error("Сannot delete product because it is available in the store");
+          return;
         }
       })
       .then(() => {
         setData(data.filter(item => item.id_product !== id));
         setSortedData(sortedData.filter(item => item.id_product !== id)); 
+        setEditedData(editedData.filter(item => item.id_product !== id));
       })
       .catch(err => console.log(err));
   };
@@ -59,6 +99,10 @@ function Product() {
     setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
   };
 
+  useEffect(() => {
+    setEditedData([...sortedData]);
+  }, [sortedData]);
+
   const handleCategoryChange = (event) => {
     setSelectedCategory(event.target.value);
     if (event.target.value === "All Categories") {
@@ -66,6 +110,7 @@ function Product() {
     } else {
       const filteredData = data.filter(item => item.category_name === event.target.value);
       setSortedData(filteredData);
+      setEditedData(filteredData);
     }
   };
 
@@ -102,7 +147,35 @@ function Product() {
     printWindow.document.write('</tbody></table></body></html>');
     printWindow.document.close();
     printWindow.print();
-};
+  };
+
+  const handleAddProduct = () => {
+    const formattedProductName = newProductName.charAt(0).toUpperCase() + newProductName.slice(1);
+
+    fetch(`http://localhost:8081/products?name=${formattedProductName}&characteristics=${newProductCharacteristics}&category=${newProductCategory}`, {
+            method: 'POST',
+    })
+    .then(res => {
+      if (res.ok) {
+        return res.json();
+      }
+    })
+    .then(() => {
+      setNewProductName('');
+      setNewProductCharacteristics('');
+      setNewProductCategory('');
+    })
+    .catch(err => console.log(err.message));
+
+    fetch('http://localhost:8081/products')
+    .then(res => res.json())
+    .then(data => {
+      setData(data);
+      setSortedData(data);
+      setEditedData(data);
+    })
+    .catch(err => console.log(err));
+  };
 
   return (
     <div className="cart-employee container">
@@ -118,10 +191,23 @@ function Product() {
 
       </div>
       <div className="employee-header">
-        <button className="add-button">Add product</button>
+        <input className="input-product" type="text" placeholder="New product name" value={newProductName} onChange={(e) => setNewProductName(e.target.value)}></input>
+        <input className="input-characteristics" type="text" placeholder="Characteristics" value={newProductCharacteristics} onChange={(e) => setNewProductCharacteristics(e.target.value)}></input>
+        <select value={newProductCategory} onChange={(e) => setNewProductCategory(e.target.value)}>
+        <option value="Select">Select category</option>
+            {categories.map((d, i) => (
+              <option key={i} value={d.category_number}>
+                {d.category_name}
+              </option>
+            ))}
+        </select>
+        <button className="add-button" onClick={handleAddProduct}>Add product</button>
+      </div>
+      <div className="employee-header">
         <button className="print-button" onClick={handlePrint}>Print information</button>
         <button className="sort-button" onClick={sortByProductName}>Sort by product name</button>
       </div>
+      
       <div>
           <table>
             <thead>
@@ -134,7 +220,52 @@ function Product() {
               </tr>
             </thead>
             <tbody>
-              {sortedData.map((d,i) => (
+
+            {editedData.map((d, i) => (
+                        <tr key={i}>
+                            <td>{d.id_product}</td>
+                            <td>
+                                {d.isEditing ? 
+                                (<input className="input-categoty" type="text" value={editName} onChange={(e) => setEditName(e.target.value)}/>) 
+                                : 
+                                (
+                                    d.product_name
+                                )}
+                            </td>
+                            <td>
+                                {d.isEditing ? 
+                                (<input className="input-categoty" type="text" value={editCharacteristics} onChange={(e) => setEditCharacteristics(e.target.value)}/>) 
+                                : 
+                                (
+                                    d.characteristics
+                                )}
+                            </td>
+                            <td>
+                                {d.isEditing ?
+                                (
+                                  <select value={editCategory} onChange={(e) => setEditCategory(e.target.value)}>
+                                        {categories.map((data, k) => 
+                                          <option key={k} value={data.category_number}>
+                                          {data.category_name}
+                                          </option>
+                                        )}
+                                  </select>
+                                ) : (d.category_name)
+                                }                                
+                            </td>
+                            <td>
+                                {d.isEditing ? (<button className="save-button" onClick={() => handleSave(d.id_product)}>Save</button>
+                                ) : (
+                                    <>
+                                        <button className="edit-button" onClick={() => handleEdit(i)}>Edit</button>
+                                        <button className="delete-button" onClick={() => handleDelete(d.id_product)}>Delete</button>
+                                    </>
+                                )}
+                            </td>
+                        </tr>
+                    ))}
+
+              {/* {sortedData.map((d,i) => (
                 <tr key={i}>
                   <td>{d.id_product}</td>
                   <td>{d.product_name}</td>
@@ -145,7 +276,7 @@ function Product() {
                     <button className="delete-button" onClick={() => handleDelete(d.id_product)}>Delete</button>
                   </td>
                 </tr>
-              ))}
+              ))} */}
             </tbody>
           </table>
       </div>
