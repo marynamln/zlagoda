@@ -72,7 +72,7 @@ function Product() {
             return res.json();
         } else if (res.status === 500) {
           alert("The product cannot be deleted because because it is available in the store.");
-          return;
+          throw ("The product cannot be deleted because because it is available in the store.");
         }
       })
       .then(() => {
@@ -188,8 +188,10 @@ function Product() {
         </option>
             ))}
       </select>
-
       </div>
+
+      <hr className='line'></hr>
+
       <div className="employee-header">
         <input className="input-product" type="text" placeholder="New product name" value={newProductName} onChange={(e) => setNewProductName(e.target.value)}></input>
         <input className="input-characteristics" type="text" placeholder="Characteristics" value={newProductCharacteristics} onChange={(e) => setNewProductCharacteristics(e.target.value)}></input>
@@ -203,6 +205,9 @@ function Product() {
         </select>
         <button className="add-button" onClick={handleAddProduct}>Add product</button>
       </div>
+
+      <hr className='line'></hr>
+      
       <div className="employee-header">
         <button className="print-button" onClick={handlePrint}>Print information</button>
         <button className="sort-button" onClick={sortByProductName}>Sort by product name</button>
@@ -264,19 +269,6 @@ function Product() {
                             </td>
                         </tr>
                     ))}
-
-              {/* {sortedData.map((d,i) => (
-                <tr key={i}>
-                  <td>{d.id_product}</td>
-                  <td>{d.product_name}</td>
-                  <td>{d.characteristics}</td>
-                  <td>{d.category_name}</td>
-                  <td>
-                    <button className="edit-button">Edit</button>
-                    <button className="delete-button" onClick={() => handleDelete(d.id_product)}>Delete</button>
-                  </td>
-                </tr>
-              ))} */}
             </tbody>
           </table>
       </div>

@@ -150,7 +150,9 @@ function Cheks() {
                 </select>
 
                 <button className="search-button" onClick={handleSearchEmployee}>Search</button>
-            </div>
+        </div>
+
+            <hr className='line'></hr>
 
             <div className="employee-header">
                 <label className="input-date">Start date: </label>
@@ -167,10 +169,16 @@ function Cheks() {
                 </select>
 
                 <button className="search-button" onClick={handleSearchProducts}>Search</button>
-        </div>
+            </div>
+
+            <hr className='line'></hr>
+
         <div className="employee-header">
             <button className="print-button" onClick={handlePrint}>Print information</button>
         </div>
+
+        <hr className='line'></hr>
+        
         <div className="employee-header">
             <label className="input-date">Sum total: {totalSum[0]?.sum} </label>
             <label className="input-date">Amount product : {productName ? productName : "All products"} : {totalSumProduct[0]?.total_units_sold} </label>

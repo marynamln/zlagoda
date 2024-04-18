@@ -19,10 +19,16 @@ app.get('/', (re, res)=>{
 
 app.get('/employee', (req, res) => {
     const surname = req.query.surname;
+    const id = req.query.id;
     let sql;
     if (surname) { 
-        sql = "SELECT id_employee, empl_surname, empl_name, empl_patronymic, empl_role, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code FROM `employee` WHERE empl_surname = ?";
+        sql = "SELECT id_employee, empl_surname, empl_name, empl_patronymic, empl_role, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code, password FROM `employee` WHERE empl_surname = ?";
         db.query(sql, [surname], (err, data)=>{
+        if(err) return res.json(err);
+        return res.json(data); })
+    } else if (id) { 
+        sql = "SELECT id_employee, empl_surname, empl_name, empl_patronymic, empl_role, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code FROM `employee` WHERE id_employee = ?";
+        db.query(sql, [id], (err, data)=>{
         if(err) return res.json(err);
         return res.json(data); })
     } else {
@@ -32,6 +38,30 @@ app.get('/employee', (req, res) => {
         return res.json(data); })
     }
 })
+
+app.post('/login', (req, res) => {
+    const id = req.query.id;
+    const password = req.query.password;
+    let sql;
+
+    if(id && password) {
+        sql = "SELECT id_employee, empl_role FROM `employee` WHERE id_employee = ? AND password = ?";
+        db.query(sql, [id, password], (err, data) => {
+            if(err) return res.status(500).json({ error: 'Internal Server Error' });
+            if(data.length === 0) {
+                return res.status(401).json({ error: 'Invalid ID or password' });
+            } else {
+                const employee = data[0];
+                if(employee.empl_role === 'manager') {
+                    return res.status(200).json({ message: 'Login successful', role: 'manager' });
+                } else if (employee.empl_role === 'cashier') {
+                    return res.status(200).json({ message: 'Login successful', role: 'cashier', ID: employee.id_employee });
+                }
+            }
+            
+        });
+    }
+});
 
 app.post('/employee', (req, res) => {
     const surname = req.query.surname;
@@ -102,11 +132,11 @@ app.delete('/employee/:id', (req, res) => {
 })
 
 app.get('/customers', (req, res)=>{
-    const percent = req.query.percent;
+    const surname = req.query.surname;
     let sql;
-    if (percent) {
-        sql = "SELECT card_number, cust_surname, cust_name, cust_patronymic, phone_number, city, street, zip_code, percent FROM customer_card WHERE percent = ?";
-        db.query(sql, [percent], (err, data)=>{
+    if (surname) {
+        sql = "SELECT card_number, cust_surname, cust_name, cust_patronymic, phone_number, city, street, zip_code, percent FROM customer_card WHERE cust_surname = ?";
+        db.query(sql, [surname], (err, data)=>{
             if(err) return res.json(err);
             return res.json(data);
         });
@@ -207,11 +237,22 @@ app.delete('/customers/:id', (req, res) => {
 })
 
 app.get('/products', (req, res)=>{
-    const sql = "SELECT id_product,	product_name, characteristics, category_number, (SELECT category_name FROM category WHERE category_number = product.category_number) AS category_name FROM product";
-    db.query(sql, (err, data)=>{
+    const name = req.query.name;
+    let sql;
+
+    if(name){
+        sql = "SELECT id_product,	product_name, characteristics, category_number, (SELECT category_name FROM category WHERE category_number = product.category_number) AS category_name FROM product WHERE product_name = ?";
+        db.query(sql, [name], (err, data)=>{
         if(err) return res.json(err);
         return res.json(data);
     })
+    } else{
+        sql = "SELECT id_product,	product_name, characteristics, category_number, (SELECT category_name FROM category WHERE category_number = product.category_number) AS category_name FROM product";
+        db.query(sql, (err, data)=>{
+        if(err) return res.json(err);
+        return res.json(data);
+    })
+    }
 })
 
 app.delete('/products/:id', (req, res) => {
@@ -345,7 +386,6 @@ app.post('/categories/:id', (req, res) => {
     const newCategoryName = req.query.newCategoryName;
 
     const sql = "UPDATE `category` SET category_name = ? WHERE category_number = ?";
-    console.log(sql);
     db.query(sql, [newCategoryName, categoryId], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ message: "Category updated successfully" });
@@ -370,6 +410,83 @@ app.get('/cashiers', (req, res) => {
     });
 });
 
+app.post('/sale', (req, res) => {
+    const upc = req.query.upc;
+    const checkNum = req.query.checkNum;
+    const prodNum = req.query.prodNum;
+    let sql;
+
+    if(upc && checkNum && prodNum){
+        sql = "INSERT INTO `sale` (upc, check_number, product_number, selling_price) SELECT ?, ?, ?, sp.selling_price FROM `store_product` AS sp WHERE sp.upc = ?";
+        db.query(sql, [upc, checkNum, prodNum, upc], (err, data)=>{
+            if(err) return res.json(err);
+            return res.json({ message: "Sale added successfully" });
+        })
+    }
+
+})
+
+app.post('/checkAdd', (req, res) => {
+    const checkNum = req.query.checkNum;
+    const cardNum = req.query.cardNum;
+    const date = req.query.date;
+    const id = req.query.id;
+    let sql;
+
+    if(cardNum && checkNum && date && id){
+        sql = "INSERT INTO `check` (check_number, card_number, print_date, sum_total, vat, id_employee) VALUES (?, ?, ?, 0, 0, ?)";
+        db.query(sql, [checkNum, cardNum, date, id], (err, data)=>{
+            if(err) return res.json(err);
+            return res.json({ message: "Check added successfully" });
+        })
+    } else if(checkNum && date && id) {
+        sql = "INSERT INTO `check` (check_number, card_number, print_date, sum_total, vat, id_employee) VALUES (?, NULL, ?, 0, 0, ?)";
+        db.query(sql, [checkNum, date, id], (err, data)=>{
+            if(err) return res.json(err);
+            return res.json({ message: "Check added successfully" });
+        })
+    }
+
+});
+
+app.post('/checkUpdate', (req, res) => {
+    const checkNum = req.query.checkNum;
+    const sumTotal = req.query.sumTotal;
+    const vat = req.query.vat;
+
+    let sql;
+
+    if (checkNum && sumTotal && vat) {
+        sql = "UPDATE `check` SET sum_total = ?, vat = ? WHERE check_number = ?";
+        db.query(sql, [sumTotal, vat, checkNum], (err, data) => {
+            if (err) return res.json(err);
+            return res.json({ message: "Check updated successfully" });
+        });
+    }
+});
+
+app.get('/saleTotal', (req, res) => {
+    const checkNum = req.query.checkNum;
+    const cardNum = req.query.cardNum;
+    let sql;
+
+    if (checkNum && cardNum) {
+        sql = "SELECT ((SUM(`sale`.product_number * `sale`.selling_price)) - ((SUM(`sale`.product_number * `sale`.selling_price)) * (`customer_card`.percent/100))) AS total FROM `sale` JOIN `check` ON `sale`.check_number = `check`.check_number JOIN `customer_card` ON `check`.card_number = `customer_card`.card_number WHERE `sale`.check_number = ?";
+        db.query(sql, [checkNum], (err, data) => {
+            if (err) return res.json(err);
+            const total = data[0].total || 0;
+            return res.json({ total });
+        });
+    } else if (checkNum) {
+        sql = "SELECT SUM(`sale`.product_number * `sale`.selling_price) AS total FROM `sale` WHERE `sale`.check_number = ?";
+        db.query(sql, [checkNum], (err, data) => {
+            if (err) return res.json(err);
+            const total = data[0].total || 0;
+            return res.json({ total });
+        });
+    }
+});
+
 app.get('/check', (req, res) => {
     const startDate = req.query.startDate;
     const endDate = req.query.endDate;
@@ -384,25 +501,66 @@ app.get('/check', (req, res) => {
         sql = "SELECT check_number, card_number, print_date, sum_total, vat, id_employee FROM `check` WHERE print_date BETWEEN ? AND ?";
         params = [startDate, endDate];
     } else if (startDate && employeeId) {
-        sql = "SELECT check_number, card_number, print_date, sum_total, vat, id_employee FROM `check` WHERE print_date > ? AND id_employee = ?";
+        sql = "SELECT check_number, card_number, print_date, sum_total, vat, id_employee FROM `check` WHERE print_date >= ? AND id_employee = ?";
         params = [startDate, employeeId];
     } else if (endDate && employeeId) {
-        sql = "SELECT check_number, card_number, print_date, sum_total, vat, id_employee FROM `check` WHERE print_date < ? AND id_employee = ?";
+        sql = "SELECT check_number, card_number, print_date, sum_total, vat, id_employee FROM `check` WHERE print_date <= ? AND id_employee = ?";
         params = [endDate, employeeId];
     } else if (startDate) {
-        sql = "SELECT check_number, card_number, print_date, sum_total, vat, id_employee FROM `check` WHERE print_date > ?";
+        sql = "SELECT check_number, card_number, print_date, sum_total, vat, id_employee FROM `check` WHERE print_date >= ?";
         params = [startDate];
     } else if (endDate) {
-        sql = "SELECT check_number, card_number, print_date, sum_total, vat, id_employee FROM `check` WHERE print_date < ?";
+        sql = "SELECT check_number, card_number, print_date, sum_total, vat, id_employee FROM `check` WHERE print_date <= ?";
         params = [endDate];
     } else if (employeeId) {
         sql = "SELECT check_number, card_number, print_date, sum_total, vat, id_employee FROM `check` WHERE id_employee = ?";
         params = [employeeId];
-    }else {
+    } else {
         sql = "SELECT check_number, card_number, print_date, sum_total, vat, id_employee FROM `check`";
     }
 
     db.query(sql, params, (err, data) => {
+        if (err) return res.status(500).json({ error: err.message });
+        return res.json(data);
+    });
+});
+
+app.get('/checkToday', (req, res) => {
+    const date = req.query.date;
+    const employeeId = req.query.employeeId;
+
+    const sql = "SELECT check_number, card_number, print_date, sum_total, vat, id_employee FROM `check` WHERE id_employee = ? AND print_date = ?";
+    db.query(sql, [employeeId, date], (err, data) => {
+        if (err) return res.status(500).json({ error: err.message });
+        return res.json(data);
+    });
+});
+
+app.get('/checkNumber', (req, res) => {
+    const checkNumber = req.query.checkNumber;
+    const employeeId = req.query.employeeId;
+    let sql;
+
+    if(checkNumber && employeeId){
+        sql = "SELECT check_number, card_number, print_date, sum_total, vat, id_employee FROM `check` WHERE check_number = ? AND id_employee = ?";
+        db.query(sql, [checkNumber, employeeId], (err, data) => {
+        if (err) return res.status(500).json({ error: err.message });
+        return res.json(data);
+        });
+    } else {
+        sql = "SELECT check_number, card_number, print_date, sum_total, vat, id_employee FROM `check`";
+        db.query(sql, (err, data) => {
+        if (err) return res.status(500).json({ error: err.message });
+        return res.json(data);
+        });
+    }
+});
+
+app.get('/checkCashierAll', (req, res) => {
+    const employeeId = req.query.employeeId;
+
+    const sql = "SELECT check_number, card_number, print_date, sum_total, vat, id_employee FROM `check` WHERE id_employee = ?";
+    db.query(sql, [employeeId], (err, data) => {
         if (err) return res.status(500).json({ error: err.message });
         return res.json(data);
     });

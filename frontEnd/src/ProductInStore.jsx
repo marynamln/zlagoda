@@ -80,7 +80,14 @@ function ProductInStore() {
         fetch(`http://localhost:8081/productsInStore/${id}`, {
             method: 'DELETE',
         })
-        .then(res => res.json())
+        .then(res => {
+            if (res.ok) {
+                return res.json();
+            } else if (res.status === 500) {
+              alert("Product cannot be deleted!");
+              throw ("Product cannot be deleted!");
+            }
+        })
         .then(() => {
             setData(data.filter(item => item.id_product !== id));
             setSortedData(sortedData.filter(item => item.id_product !== id)); 
@@ -204,7 +211,7 @@ function ProductInStore() {
         if (existingProduct) {
             alert("Product with the same UPC already exists!");
             setNewProductUPC('');
-            return;
+            throw ("Product with the same UPC already exists!");
         }
 
         fetch(`http://localhost:8081/productsInStore?idProduct=${newProductID}&upc=${newProductUPC}&price=${newProductPrice}&number=${newProductNumber}&prom=${newProductProm}`, {
@@ -244,6 +251,9 @@ function ProductInStore() {
                     ))}
                 </select>
             </div>
+
+            <hr className='line'></hr>
+
             <div className="employee-header">  
                 <select onChange={handlePromotionalChange}>
                     <option value="all">All Products</option>
@@ -251,10 +261,15 @@ function ProductInStore() {
                     <option value="non-promotional">Non-Promotional Products</option>
                 </select>
             </div>
+
+            <hr className='line'></hr>
+
             <div className="employee-header">  
                 <input type="text" placeholder="Enter UPC" value={upc} onChange={handleUpcChange}></input>
                 <button className="search-button" onClick={searchProductByUpc}>Search</button> 
             </div>
+
+            <hr className='line'></hr>
 
             <div className="employee-header">
                 <input className="input" type="text" placeholder="New UPC" value={newProductUPC} onChange={(e) => setNewProductUPC(e.target.value)}></input>
@@ -274,11 +289,14 @@ function ProductInStore() {
                 <button className="add-button" onClick={handleAdd}>Add product</button>
             </div>
 
+            <hr className='line'></hr>
+
             <div className="employee-header">
                 <button className="print-button" onClick={handlePrint}>Print information</button>
                 <button className="sort-button" onClick={sortByProductName}>Sort by product name</button>
                 <button className="sort-button" onClick={sortByAmount}>Sort by amount</button>
             </div>
+            
             <div>
                 <table>
                     <thead>

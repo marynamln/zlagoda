@@ -66,6 +66,34 @@ function Employee() {
     };
 
     const handleSave = (id) => {
+        const today = new Date();
+        const birthDate = new Date(editDateBirth);
+        const startDate = new Date(editDateStart);
+
+        if (birthDate > today) {
+            alert("Date of birth cannot be in the future!");
+            setEditDateBirth('');
+            throw ("Date of birth cannot be in the future!");
+        }
+
+        const age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+
+        if (age < 18) {
+            alert("Employee must be at least 18 years old!");
+            setEditDateBirth('');
+            throw ("Employee must be at least 18 years old!");
+        }
+
+        if (startDate > today) {
+            alert("Date cannot be in the future!");
+            setEditDateStart('');
+            throw ("Date cannot be in the future!");
+        }
+
         fetch(`http://localhost:8081/employee/${id}?surname=${editSurname}&name=${editName}&patronymic=${editPatronymic}&role=${editRole}&salary=${editSalary}&dateBirth=${editDateBirth}&dateStart=${editDateStart}&phone=${editPhone}&city=${editCity}&street=${editStreet}&zipCode=${editZip}`, {
             method: 'POST',
         })
@@ -91,7 +119,14 @@ function Employee() {
         fetch(`http://localhost:8081/employee/${id}`, {
             method: 'DELETE',
         })
-        .then(res => res.json())
+        .then(res => {
+            if (res.ok) {
+                return res.json();
+            } else if (res.status === 500) {
+              alert("Emloyee cannot be deleted!");
+              throw ("Emloyee cannot be deleted!");
+            }
+          })
         .then(() => {
             setData(data.filter(item => item.id_employee !== id));
             setSortedData(sortedData.filter(item => item.id_employee !== id));
@@ -194,7 +229,7 @@ function Employee() {
         if (existingPhone) {
             alert("Employee with the same phone number already exists!");
             setPhone('');
-            return;
+            throw ("Employee with the same phone number already exists!");
         }
 
         const today = new Date();
@@ -204,7 +239,7 @@ function Employee() {
         if (birthDate > today) {
             alert("Dates cannot be in the future!");
             setDateBirth('');
-            return;
+            throw ("Dates cannot be in the future!");
         }
 
         const age = today.getFullYear() - birthDate.getFullYear();
@@ -216,13 +251,13 @@ function Employee() {
         if (age < 18) {
             alert("Employee must be at least 18 years old!");
             setDateBirth('');
-            return;
+            throw ("Employee must be at least 18 years old!");
         }
 
         if (startDate > today) {
             alert("Dates cannot be in the future!");
             setDateStart('');
-            return;
+            throw ("Dates cannot be in the future!");
         }
 
         fetch(`http://localhost:8081/employee?surname=${surnameNew}&name=${name}&patronymic=${patronymic}&role=${role}&salary=${salary}&phone=${phone}&city=${city}&street=${street}&zipCode=${zip}&dateBirth=${dateBirth}&dateStart=${dateStart}`, {
@@ -267,10 +302,15 @@ function Employee() {
                     <option value="cashier">Cashiers</option>
                 </select>
             </div>
+
+            <hr className='line'></hr>
+
             <div className="employee-header">  
                 <input type="text" placeholder="Enter surname" value={surname} onChange={handleSurnameSearch}></input>
                 <button className="search-button" onClick={searchEmployeeBySurname}>Search</button> 
             </div>
+
+            <hr className='line'></hr>
 
             <div className="employee-header">  
                 <input className="input" type="text" placeholder="Surname" value={surnameNew} onChange={(e) => setSurnameNew(e.target.value)}></input>
@@ -288,6 +328,8 @@ function Employee() {
                 <input className="input" type="text" placeholder="Zip code" value={zip} onChange={(e) => setZip(e.target.value)}></input>
             </div>
 
+            <hr className='line'></hr>
+
             <div className="employee-header">  
             <label className="input-date">Date of birth: </label>
                 <input type="date" value={dateBirth} onChange={(e) => setDateBirth(e.target.value)}/>
@@ -295,6 +337,8 @@ function Employee() {
                 <input type="date" value={dateStart} onChange={(e) => setDateStart(e.target.value)}/>
                 <button className="add-button" onClick={handleAdd}>Add employee</button>
             </div>
+
+            <hr className='line'></hr>
 
             <div className="employee-header">
                 <button className="print-button" onClick={handlePrint}>Print information</button>

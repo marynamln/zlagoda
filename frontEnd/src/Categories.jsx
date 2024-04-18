@@ -57,7 +57,7 @@ function Categories() {
                 return res.json();
             } else if (res.status === 500) {
                 alert("The category cannot be deleted because it contains products.");
-                return;
+                throw ("The category cannot be deleted because it contains products.");
             }
         })
         .then(() => {

@@ -29,6 +29,22 @@
     margin-bottom: 10px;
   }
   
+  .login {
+    background-color: #a8a29e;
+  }
+
+  .p {
+    font-size: x-large;
+  }
+
+  .line {
+    margin-left: 150px;
+    margin-right: 150px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-top: 0.7px solid #44403c;    
+  }
+
   .disputed {
     color: #ef4444;
     font-weight: 600;
@@ -197,6 +213,12 @@
   .input {
     height: 30px;
     width: 100px;
+    margin-right: 5px;
+  }
+
+  .input-check {
+    height: 30px;
+    width: 250px;
     margin-right: 5px;
   }
 

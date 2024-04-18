@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
+
 import "./App.css";
+import LoginForm from "./LoginForm";
 import Product from "./Product";
 import ProductInStore from "./ProductInStore";
 import Employee from "./Employee";
@@ -8,10 +10,18 @@ import Customers from "./Customers";
 import Categories from "./Categories";
 import Checks from "./Checks";
 
+import ProductCashier from "./ProductCashier";
+import ProductInStoreCashier from "./ProductInStoreCashier";
+import CustomersCashier from "./CustomersCashier";
+import AboutMeCashier from "./AboutMeCashier";
+import ChecksCashier from "./ChecksCashier";
+
 function App() {
-  const [showForm, setShowForm] = useState(false);
-  const [facts, setFacts] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedInCashier, setIsLoggedInCashier] = useState(false);
+  const [cashierInfo, setCashierInfo] = useState(null);
+  
+  const [showForm, setShowForm] = useState(false); 
   const [currentCategory, setCurrentCategory] = useState("about-me");
   const [aboutMe, setAboutMe] = useState(true);
   const [product, setProduct] = useState(false);
@@ -20,44 +30,80 @@ function App() {
   const [customers, setCustomers] = useState(false);
   const [checks, setChecks] = useState(false);
   const [employee, setEmployee] = useState(false);
-  const [editProduct, setEditProduct] = useState(false);
+  
+  const [currentCategoryCashier, setCurrentCategoryCashier] = useState("about-me");
+  const [aboutMeCashier, setAboutMeCashier] = useState(true);
+  const [productCashier, setProductCashier] = useState(false);
+  const [productInStoreCashier, setProductInStoreCashier] = useState(false);
+  const [customersCashier, setCustomersCashier] = useState(false);
+  const [checksCashier, setChecksCashier] = useState(false);
 
   return (
     <>
-      <Header showForm={showForm} setShowForm={setShowForm} />
+        {(!isLoggedIn && !isLoggedInCashier) && <LoginForm setIsLoggedIn={setIsLoggedIn} setIsLoggedInCashier={setIsLoggedInCashier} setCashierInfo={setCashierInfo} />}
+        {isLoggedIn && (
+          <>
+            <Header showForm={showForm} setShowForm={setShowForm} />
+            <main className="main">
+              <CategoryFilter
+                setCurrentCategory={setCurrentCategory}
+                currentCategory={currentCategory}
+                setProduct={setProduct}
+                setEmployee={setEmployee}
+                setAboutMe={setAboutMe}
+                setProductInStore={setProductInStore}
+                setCustomers={setCustomers}
+                setChecks={setChecks}
+                setShowCategories={setShowCategories}
+                setIsLoggedIn={setIsLoggedIn}
+                isLoggedIn={isLoggedIn}
+                setIsLoggedInCashier={setIsLoggedInCashier}
+                isLoggedInCashier={isLoggedInCashier}
+            />
+            {aboutMe ? <AboutMe setAboutMe={setAboutMe} aboutMe={aboutMe} /> : null}
+            {product ? <Product setProduct={setProduct} product={product} /> : null}
+            {productInStore ? (<ProductInStore setProductInStore={setProductInStore} productInStore={productInStore} />
+            ) : null}
+            {showCategories ?  <Categories setShowCategories={setShowCategories} showCategories={showCategories} /> : null}
+            {customers ? <Customers setCustomers={setCustomers} customers={customers} /> : null}
+            {checks ? <Checks setChecks={setChecks} checks={checks} /> : null}
+            {employee ? <Employee setEmployee={setEmployee} employee={employee} /> : null}
+            </main>
+          </>
+        )} 
 
-      <main className="main">
-        <CategoryFilter
-          setCurrentCategory={setCurrentCategory}
-          currentCategory={currentCategory}
-          setProduct={setProduct}
-          setAboutMe={setAboutMe}
-          setProductInStore={setProductInStore}
-          setCustomers={setCustomers}
-          setChecks={setChecks}
-          setEmployee={setEmployee}
-          setShowCategories={setShowCategories}
-        />
-        {aboutMe ? <AboutMe setAboutMe={setAboutMe} aboutMe={aboutMe} /> : null}
-        {product ? <Product setProduct={setProduct} product={product} /> : null}
-        {productInStore ? (
-          <ProductInStore
-            setProductInStore={setProductInStore}
-            productInStore={productInStore}
-            editProduct={editProduct}
-            setEditProduct={setEditProduct}
-          />
-        ) : null}
-        {showCategories ?  <Categories setShowCategories={setShowCategories} showCategories={showCategories} /> : null}
-        {customers ? <Customers setCustomers={setCustomers} customers={customers} /> : null}
-        {checks ? <Checks setChecks={setChecks} checks={checks} /> : null}
-        {employee ? <Employee setEmployee={setEmployee} employee={employee} /> : null}
-      </main>
+        {isLoggedInCashier && (
+          <>
+            <Header showForm={showForm} setShowForm={setShowForm} />
+            <main className="main">
+              <CategoryFilterCashier
+                setCurrentCategoryCashier={setCurrentCategoryCashier}
+                currentCategoryCashier={currentCategoryCashier}
+                setProductCashier={setProductCashier}
+                setAboutMeCashier={setAboutMeCashier}
+                setProductInStoreCashier={setProductInStoreCashier}
+                setCustomersCashier={setCustomersCashier}
+                setChecksCashier={setChecksCashier}
+                setIsLoggedInCashier={setIsLoggedInCashier}
+                isLoggedInCashier={isLoggedInCashier}
+                setIsLoggedIn={setIsLoggedIn}
+                isLoggedIn={isLoggedIn}
+                setCashierInfo={setCashierInfo}
+            />
+            {aboutMeCashier ? <AboutMeCashier cashierInfo={cashierInfo} setAboutMeCashier={setAboutMeCashier} aboutMeCashier={aboutMeCashier} /> : null}
+            {productCashier ? <ProductCashier setProductCashier={setProductCashier} productCashier={productCashier} /> : null}
+            {productInStoreCashier ? ( <ProductInStoreCashier setProductInStoreCashier={setProductInStoreCashier} productInStoreCashier={productInStoreCashier} />
+            ) : null}
+            {customersCashier ? <CustomersCashier setCustomersCashier={setCustomersCashier} customersCashier={customersCashier} /> : null}
+            {checksCashier ? <ChecksCashier cashierInfo={cashierInfo} setChecksCashier={setChecksCashier} checksCashier={checksCashier} /> : null}
+            </main>
+          </>
+        )}     
     </>
   );
 }
 
-function Header({ showForm, setShowForm }) {
+function Header() {
   const appTitle = "Zlagoda";
 
   return (
@@ -66,6 +112,143 @@ function Header({ showForm, setShowForm }) {
         <h1>{appTitle}</h1>
       </div>
     </header>
+  );
+}
+
+function CategoryFilterCashier({
+  setCurrentCategoryCashier,
+  currentCategoryCashier,
+  setProductCashier,
+  setAboutMeCashier,
+  setProductInStoreCashier,
+  setCustomersCashier,
+  setChecksCashier,
+  setIsLoggedInCashier,
+  isLoggedInCashier,
+  setIsLoggedIn,
+  isLoggedIn,
+}) {
+
+  return(
+    <aside>
+      {isLoggedInCashier && (
+        <ul>
+          <li className="products">
+          <button
+            className="btn btn-all-categories"
+            onClick={() => {
+              if (currentCategoryCashier === "about-me") {
+                setAboutMeCashier(false);
+              } else if (currentCategoryCashier === "products-in-store") {
+                setProductInStoreCashier(false);
+              } else if (currentCategoryCashier === "customers") {
+                setCustomersCashier(false);
+              } else if (currentCategoryCashier === "checks") {
+                setChecksCashier(false);
+              }
+              setCurrentCategoryCashier("product");
+              setProductCashier(true);
+            }}
+          >
+            Products
+          </button>
+          </li>
+
+          <li className="products-in-store">
+          <button
+            className="btn btn-all-categories"
+            onClick={() => {
+              if (currentCategoryCashier === "about-me") {
+                setAboutMeCashier(false);
+              } else if (currentCategoryCashier === "product") {
+                setProductCashier(false);
+              } else if (currentCategoryCashier === "customers") {
+                setCustomersCashier(false);
+              } else if (currentCategoryCashier === "checks") {
+                setChecksCashier(false);
+              }
+              setCurrentCategoryCashier("products-in-store");
+              setProductInStoreCashier(true);
+            }}
+          >
+            Products in store
+          </button>
+        </li>
+
+        <li className="customers">
+          <button
+            className="btn btn-all-categories"
+            onClick={() => {
+              if (currentCategoryCashier === "about-me") {
+                setAboutMeCashier(false);
+              } else if (currentCategoryCashier === "product") {
+                setProductCashier(false);
+              } else if (currentCategoryCashier === "products-in-store") {
+                setProductInStoreCashier(false);
+              } else if (currentCategoryCashier === "checks") {
+                setChecksCashier(false);
+              }
+              setCurrentCategoryCashier("customers");
+              setCustomersCashier(true);
+            }}
+          >
+            Customers cards
+          </button>
+        </li>
+
+        <li className="checks">
+          <button
+            className="btn btn-all-categories"
+            onClick={() => {
+              if (currentCategoryCashier === "about-me") {
+                setAboutMeCashier(false);
+              } else if (currentCategoryCashier === "product") {
+                setProductCashier(false);
+              } else if (currentCategoryCashier === "products-in-store") {
+                setProductInStoreCashier(false);
+              } else if (currentCategoryCashier === "customers") {
+                setCustomersCashier(false);
+              }
+              setCurrentCategoryCashier("checks");
+              setChecksCashier(true);
+            }}
+          >
+            Checks
+          </button>
+        </li>
+
+        <li className="about-me">
+          <button
+            className="btn btn-all-categories"
+            onClick={() => {
+              if (currentCategoryCashier === "checks") {
+                setChecksCashier(false);
+              } else if (currentCategoryCashier === "product") {
+                setProductCashier(false);
+              } else if (currentCategoryCashier === "products-in-store") {
+                setProductInStoreCashier(false);
+              } else if (currentCategoryCashier === "customers") {
+                setCustomersCashier(false);
+              }
+              setCurrentCategoryCashier("about-me");
+              setAboutMeCashier(true);
+            }}
+          >
+            About me
+          </button>
+        </li>
+
+        <li className="log-out">
+          <button
+            className="btn btn-all-categories"
+            onClick={() => { setIsLoggedIn(false); setIsLoggedInCashier(false); }}
+          >
+            Log out
+          </button>
+        </li>
+        </ul>
+      )}
+    </aside>
   );
 }
 
@@ -79,9 +262,13 @@ function CategoryFilter({
   setChecks,
   setEmployee,
   setShowCategories,
+  setIsLoggedIn,
+  isLoggedIn,
 }) {
+
   return (
     <aside>
+      {isLoggedIn && (
       <ul>
         <li className="products">
           <button
@@ -256,53 +443,15 @@ function CategoryFilter({
         <li className="log-out">
           <button
             className="btn btn-all-categories"
-            onClick={() => setCurrentCategory("log-out")}
+            onClick={() => { setIsLoggedIn(false); setIsLoggedInCashier(false); }}
           >
             Log out
           </button>
         </li>
       </ul>
+      )}
     </aside>
   );
 }
 
 export default App;
-
-
-// import React, { useEffect, useState } from 'react'
-
-// function App(){
-//   const [data, setData] = useState([])
-//   useEffect(()=>{
-//       fetch('http://localhost:8081/users')
-//       .then(res => res.json())
-//       .then(data => setData(data))
-//       .catch(err => console.log(err));
-//   }, []
-//   )
-//     return(
-//       <div>
-//           <table>
-//             <thead>
-//               <tr>
-//                 <th>id_employee</th>
-//                 <th>empl_surname</th>
-//                 <th>empl_name</th>
-//               </tr>
-//             </thead>
-//             <tbody>
-//               {data.map((d,i) => (
-//                 <tr key={i}>
-//                   <td>{d.id_employee}</td>
-//                   <td>{d.empl_surname}</td>
-//                   <td>{d.empl_name}</td>
-//                 </tr>
-//               ))}
-//             </tbody>
-//           </table>
-//       </div>
-//     )
-// }
-
-// export default App
-
