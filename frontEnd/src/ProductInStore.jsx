@@ -17,7 +17,11 @@ function ProductInStore() {
     const [editName, setEditName] = useState(''); 
     const [editPrice, setEditPrice] = useState('');
     const [editNumber, setEditNumber] = useState('');
-    const [editProm, setEditProm] = useState('');
+
+    const [newUpcProm, setNewUpcProm] = useState('');
+    const [otherUpcProm, setOtherUpcProm] = useState('');
+    const [nonPromProducts, setNonPromProducts]= useState([]);
+    const [numberProm, setNumberProm] = useState('');
 
     useEffect(() => {
         fetch('http://localhost:8081/categories')
@@ -42,6 +46,14 @@ function ProductInStore() {
                 setProducts(data);
             })
             .catch(err => console.log(err));  
+
+        fetch('http://localhost:8081/nonPromProductsInStore')
+        .then(res => res.json())
+        .then(data => {
+            setNonPromProducts(data);
+        })
+        .catch(err => console.log(err));  
+
     }, []);
 
     const handleEdit = (index) => {
@@ -51,11 +63,22 @@ function ProductInStore() {
         setEditName(updatedData[index].id_product);
         setEditNumber(updatedData[index].products_number);
         setEditPrice(updatedData[index].selling_price);
-        setEditProm(updatedData[index].promotional_product);
     };
 
     const handleSave = (id) => {
-        fetch(`http://localhost:8081/productsInStore/${id}?prodID=${editName}&price=${editPrice}&number=${editNumber}&prom=${editProm}`, {
+        if(editPrice <= 0){
+            alert("Price cannot be negative or 0!");
+            setEditPrice('');
+            throw ("Price cannot be negative or 0!");
+        }
+
+        if(editNumber <= 0){
+            alert("Number of products cannot be negative or 0!");
+            setEditNumber('');
+            throw ("Number of products cannot be negative or 0!");
+        }
+
+        fetch(`http://localhost:8081/productsInStore/${id}?prodID=${editName}&price=${editPrice}&number=${editNumber}`, {
             method: 'POST',
         })
         .then(res => {
@@ -76,8 +99,8 @@ function ProductInStore() {
             .catch(err => console.log(err));
     };
 
-    const handleDelete = (id) => {
-        fetch(`http://localhost:8081/productsInStore/${id}`, {
+    const handleDelete = (upc) => {
+        fetch(`http://localhost:8081/productsInStore/${upc}`, {
             method: 'DELETE',
         })
         .then(res => {
@@ -89,9 +112,9 @@ function ProductInStore() {
             }
         })
         .then(() => {
-            setData(data.filter(item => item.id_product !== id));
-            setSortedData(sortedData.filter(item => item.id_product !== id)); 
-            setEditedData(editedData.filter(item => item.id_product !== id));
+            setData(data.filter(item => item.upc !== upc));
+            setSortedData(sortedData.filter(item => item.upc !== upc)); 
+            setEditedData(editedData.filter(item => item.upc !== upc));
         })
         .catch(err => console.log(err));
     };
@@ -207,6 +230,23 @@ function ProductInStore() {
     };
 
     const handleAdd = () => {
+        if(newProductID.length == 0 || newProductUPC.length == 0 || newProductPrice.length == 0 || newProductNumber.length == 0) {
+            alert("Not all required fields are filled!");
+            throw ("Not all required fields are filled!");
+        }
+
+        if(newProductPrice <= 0){
+            alert("Price cannot be negative or 0!");
+            setNewProductPrice('');
+            throw ("Price cannot be negative or 0!");
+        }
+
+        if(newProductNumber <= 0){
+            alert("Number of products cannot be negative or 0!");
+            setNewProductNumber('');
+            throw ("Number of products cannot be negative or 0!");
+        }
+
         const existingProduct = data.find(product => product.upc === newProductUPC);
         if (existingProduct) {
             alert("Product with the same UPC already exists!");
@@ -214,7 +254,7 @@ function ProductInStore() {
             throw ("Product with the same UPC already exists!");
         }
 
-        fetch(`http://localhost:8081/productsInStore?idProduct=${newProductID}&upc=${newProductUPC}&price=${newProductPrice}&number=${newProductNumber}&prom=${newProductProm}`, {
+        fetch(`http://localhost:8081/productsInStore?idProduct=${newProductID}&upc=${newProductUPC}&price=${newProductPrice}&number=${newProductNumber}&prom=${0}`, {
             method: 'POST',
         })
         .then(res => {
@@ -230,6 +270,94 @@ function ProductInStore() {
             setNewProductProm('');
         })
         .catch(err => console.log(err.message));
+
+        fetch('http://localhost:8081/productsInStore')
+        .then(res => res.json())
+        .then(data => {
+            setData(data);
+            setSortedData(data);
+            setEditedData(data);
+        })
+        .catch(err => console.log(err));
+
+        fetch('http://localhost:8081/nonPromProductsInStore')
+        .then(res => res.json())
+        .then(data => {
+            setNonPromProducts(data);
+        })
+        .catch(err => console.log(err));
+    };
+
+    const handleAddPromotional = () => {
+        if(newUpcProm.length == 0 || otherUpcProm.length == 0 || numberProm.length == 0){
+            alert("Not all required fields are filled!");
+            throw ("Not all required fields are filled!");
+        }
+
+        if(numberProm <= 0){
+            alert("Number of products cannot be negative or 0!");
+            setNumberProm('');
+            throw ("Number of products cannot be negative or 0!");
+        }
+
+        const existingProduct = data.find(product => product.upc === newUpcProm);
+        if (existingProduct) {
+            alert("Product with the same UPC already exists!");
+            setNewUpcProm('');
+            throw ("Product with the same UPC already exists!");
+        }
+
+        const prodNum = nonPromProducts.find(product => product.upc === otherUpcProm);
+        if(prodNum.products_number < numberProm) {
+            alert("The product quantity is too large!");
+            setNumberProm('');
+            throw ("The product quantity is too large!");
+        }
+
+        fetch(`http://localhost:8081/productsInStorePromotional?upc=${newUpcProm}&upcProm=${otherUpcProm}&number=${numberProm}`, {
+            method: 'POST',
+        })
+        .then(res => {
+        if (res.ok) {
+            return res.json();
+        }
+        })
+        .then(() => {
+            setNewUpcProm('');
+            setOtherUpcProm('');
+            setNumberProm('');
+        })
+        .catch(err => console.log(err.message));
+
+        fetch(`http://localhost:8081/productsInStoreUpdateProm?upc=${otherUpcProm}&upcProm=${newUpcProm}`, {
+            method: 'POST',
+        })
+        .then(res => {
+        if (res.ok) {
+            return res.json();
+        }
+        })
+        .catch(err => console.log(err.message));
+
+        const selectedProduct = nonPromProducts.find(product => product.upc === otherUpcProm);
+        let newNum = selectedProduct.products_number - numberProm;
+
+        fetch(`http://localhost:8081/updateNumberProd?upc=${otherUpcProm}&number=${newNum}`, {
+            method: 'POST',
+        })
+        .then(res => {
+        if (res.ok) {
+            return res.json();
+        }
+        })
+        .catch(err => console.log(err.message));
+
+        fetch('http://localhost:8081/nonPromProductsInStore')
+        .then(res => res.json())
+        .then(data => {
+            setNonPromProducts(data);
+        })
+        .catch(err => console.log(err));
 
         fetch('http://localhost:8081/productsInStore')
         .then(res => res.json())
@@ -265,14 +393,14 @@ function ProductInStore() {
             <hr className='line'></hr>
 
             <div className="employee-header">  
-                <input type="text" placeholder="Enter UPC" value={upc} onChange={handleUpcChange}></input>
+                <input className="input" type="text" placeholder="Enter UPC" value={upc} onChange={handleUpcChange}></input>
                 <button className="search-button" onClick={searchProductByUpc}>Search</button> 
             </div>
 
             <hr className='line'></hr>
 
             <div className="employee-header">
-                <input className="input" type="text" placeholder="New UPC" value={newProductUPC} onChange={(e) => setNewProductUPC(e.target.value)}></input>
+                <input className="input" type="number" placeholder="New UPC" value={newProductUPC} onChange={(e) => setNewProductUPC(e.target.value)}></input>
                 <select className="input-product-select" value={newProductID} onChange={(e) => setNewProductID(e.target.value)}>
                     <option>Select product</option>
                     {products.map((d, i) => (
@@ -281,12 +409,23 @@ function ProductInStore() {
                 </select>
                 <input className="input" type="number" min={0} placeholder="Price" value={newProductPrice} onChange={(e) => setNewProductPrice(e.target.value)}></input>
                 <input className="input" type="number" min={1} placeholder="Number" value={newProductNumber} onChange={(e) => setNewProductNumber(e.target.value)}></input>
-                <select value={newProductProm} onChange={(e) => setNewProductProm(e.target.value)}>
-                    <option value="select-promotional">Is promotional?</option>
-                    <option value="1">Promotional product</option>
-                    <option value="0">Non-promotional product</option>
-                </select>
+                
                 <button className="add-button" onClick={handleAdd}>Add product</button>
+            </div>
+
+            <hr className='line'></hr>
+
+            <div className="employee-header">
+                <input className="input-prom-upc" type="number" placeholder="Promotional UPC" value={newUpcProm} onChange={(e) => setNewUpcProm(e.target.value)}></input>
+                <select className="input-product-select" value={otherUpcProm} onChange={(e) => setOtherUpcProm(e.target.value)}>
+                    <option value={''}>Select product</option>
+                    {nonPromProducts.map((d, i) => (
+                        <option key={i} value={d.upc}> {d.upc} - {d.product_name}, number - {d.products_number} </option>
+                    ))}
+                </select>
+                <input className="input" type="number" min={1} placeholder="Number" value={numberProm} onChange={(e) => setNumberProm(e.target.value)}></input>
+                
+                <button className="add-button" onClick={handleAddPromotional}>Add promotional product</button>
             </div>
 
             <hr className='line'></hr>
@@ -344,21 +483,14 @@ function ProductInStore() {
                                 }                                
                             </td>
                             <td>
-                            {d.isEditing ?
-                                (
-                                  <select value={editProm} onChange={(e) => setEditProm(e.target.value)}>
-                                        <option value="1">1</option>
-                                        <option value="0">0</option>
-                                  </select>
-                                ) : (d.promotional_product)
-                                }     
+                                {d.promotional_product}
                             </td>
                             <td>
                                 {d.isEditing ? (<button className="save-button" onClick={() => handleSave(d.upc)}>Save</button>
                                 ) : (
                                     <>
                                         <button className="edit-button" onClick={() => handleEdit(i)}>Edit</button>
-                                        <button className="delete-button" onClick={() => handleDelete(d.id_product)}>Delete</button>
+                                        <button className="delete-button" onClick={() => handleDelete(d.upc)}>Delete</button>
                                     </>
                                 )}
                             </td>

@@ -5,24 +5,24 @@ function Customers() {
     const [sortedData, setSortedData] = useState([]);
     const [sortDirection, setSortDirection] = useState('asc');
     const [percent, setPercent] = useState('');
-    const [card, setCard] = useState([]);
-    const [surname, setSurname] = useState([]);
-    const [name, setName] = useState([]);
-    const [patronymic, setPatronymic] = useState([]);
-    const [phone, setPhone] = useState([]);
-    const [city, setCity] = useState([]);
-    const [street, setStreet] = useState([]);
-    const [zip, setZip] = useState([]);
-    const [percentNew, setPercentNew] = useState([]);
+    const [card, setCard] = useState('');
+    const [surname, setSurname] = useState('');
+    const [name, setName] = useState('');
+    const [patronymic, setPatronymic] = useState('');
+    const [phone, setPhone] = useState('');
+    const [city, setCity] = useState('');
+    const [street, setStreet] = useState('');
+    const [zip, setZip] = useState('');
+    const [percentNew, setPercentNew] = useState('');
     const [editedData, setEditedData] = useState([...sortedData]);
-    const [editSurname, setEditSurname] = useState([]);
-    const [editName, setEditName] = useState([]);
-    const [editPatronymic, setEditPatronymic] = useState([]);
-    const [editPhone, setEditPhone] = useState([]);
-    const [editCity, setEditCity] = useState([]);
-    const [editStreet, setEditStreet] = useState([]);
-    const [editZip, setEditZip] = useState([]);
-    const [editPercent, setEditPercent] = useState([]);
+    const [editSurname, setEditSurname] = useState('');
+    const [editName, setEditName] = useState('');
+    const [editPatronymic, setEditPatronymic] = useState('');
+    const [editPhone, setEditPhone] = useState('');
+    const [editCity, setEditCity] = useState('');
+    const [editStreet, setEditStreet] = useState('');
+    const [editZip, setEditZip] = useState('');
+    const [editPercent, setEditPercent] = useState('');
 
     useEffect(()=>{
         fetch('http://localhost:8081/customers')
@@ -50,6 +50,23 @@ function Customers() {
     };
 
     const handleSave = (id) => {
+        if(editSurname.length == 0 || editName.length == 0 || editPhone.length == 0 || editPercent.length == 0){
+            alert("Not all required fields are filled!");
+            throw ("Not all required fields are filled!");
+        }
+        
+        if(editPercent <= 0){
+            alert("Percent cannot be negative or 0!");
+            setEditPercent('');
+            throw ("Percent cannot be negative or 0!");
+        }
+
+        if(editPhone.length > 13){
+            alert("Phone number is too long! It should not exceed 13 characters.");
+            setEditPhone('');
+            throw ("Phone number is too long!");
+        }
+        
         fetch(`http://localhost:8081/customers/${id}?surname=${editSurname}&name=${editName}&patronymic=${editPatronymic}&phone=${editPhone}&city=${editCity}&street=${editStreet}&zipCode=${editZip}&percent=${editPercent}`, {
             method: 'POST',
         })
@@ -165,20 +182,38 @@ function Customers() {
         printWindow.document.close();
         printWindow.print();
     };
+    
 
     const handleAdd = () => {
+        if(card.length == 0 || surname.length == 0 || name.length == 0 || phone.length == 0 || percentNew.length == 0) {
+            alert("Not all required fields are filled!");
+            throw ("Not all required fields are filled!");
+        }
+        
+        if(percentNew <= 0){
+            alert("Percent cannot be negative or 0!");
+            setPercentNew('');
+            throw ("Percent cannot be negative or 0!");
+        }
+
         const existingCustomer = data.find(cust => cust.card_number === card);
         if (existingCustomer) {
             alert("Customer with the same card already exists!");
             setCard('');
-            return;
+            throw ("Customer with the same card already exists!");
+        }
+
+        if(phone.length > 13){
+            alert("Phone number is too long! It should not exceed 13 characters.");
+            setPhone('');
+            throw ("Phone number is too long!");
         }
 
         const existingPhone = data.find(cust => cust.phone_number === phone);
         if (existingPhone) {
             alert("Customer with the same phone number already exists!");
             setPhone('');
-            return;
+            throw ("Customer with the same phone number already exists!");
         }
 
         fetch(`http://localhost:8081/customers?card=${card}&surname=${surname}&name=${name}&patronymic=${patronymic}&phone=${phone}&city=${city}&street=${street}&zipCode=${zip}&percent=${percentNew}`, {

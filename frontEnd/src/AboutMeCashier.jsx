@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 function AboutMeCashier({ cashierInfo }) {
     const [data, setData] = useState(null);
+    const [password, setPassword] = useState('');
 
     useEffect(()=>{
         fetch(`http://localhost:8081/employee?id=${cashierInfo}`)
@@ -11,6 +12,23 @@ function AboutMeCashier({ cashierInfo }) {
         })
         .catch(err => console.log(err));
     }, [cashierInfo]);
+
+    const handleChangePassword = () => {
+        if(password.length == 0) {
+            alert("Not all required fields are filled!");
+            throw ("Not all required fields are filled!");
+        }
+
+        fetch(`http://localhost:8081/updatePassword?id=${cashierInfo}&password=${password}`, {
+            method: 'POST',
+        })
+        .then(res => res.json())
+        .then(data => {
+            setPassword('');
+            setData(...data);
+        })
+        .catch(err => console.log(err.message));
+    };
 
     return (
         <div className="about-me-container container">
@@ -26,6 +44,12 @@ function AboutMeCashier({ cashierInfo }) {
                     <p className='p'><strong>Phone number:</strong> {data.phone_number}</p>
                 </p>
             )}
+
+            <div className='employee-header'>
+                <label className='p'><strong>Change password:   </strong></label>
+                <input className="new-password" type='text' placeholder="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                <button className="add-button" onClick={handleChangePassword}>Save new password</button>
+            </div>
         </div>
       );
 }

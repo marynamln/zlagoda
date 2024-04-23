@@ -114,7 +114,7 @@ function ProductInStoreCashier() {
             <hr className='line'></hr>
 
             <div className="employee-header">  
-                <input type="text" placeholder="Enter UPC" value={upc} onChange={handleUpcChange}></input>
+                <input className="input" type="text" placeholder="Enter UPC" value={upc} onChange={handleUpcChange}></input>
                 <button className="search-button" onClick={searchProductByUpc}>Search</button> 
             </div>
 

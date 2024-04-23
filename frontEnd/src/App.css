@@ -37,6 +37,14 @@
     font-size: x-large;
   }
 
+  button {
+    padding: 8px;
+    border-width: 0px;
+    border-radius: 10px;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+  }
+
   .line {
     margin-left: 150px;
     margin-right: 150px;
@@ -148,59 +156,47 @@
   }
 
   .add-button {
-    padding: 5px;
     background-color: #9a7755;
     border-color: #9a7755;
     color: white;
-    border-radius: 5px;
     margin-left: 5px;
   }
   
   .print-button {
-    padding: 5px;
     background-color: #9a7755;
     border-color: #9a7755;
     color: white;
-    border-radius: 5px;
     margin-left: 10px;
   }
 
   .search-button,
   .close-button  {
-    padding: 5px;
     background-color: #9a7755;
     border-color: #9a7755;
     color: white;
-    border-radius: 5px;
     margin-left: 10px;
   }
   
   .sort-button {
-    padding: 5px;
     background-color: #9a7755;
     border-color: #9a7755;
     color: white;
-    border-radius: 5px;
     margin-left: 10px;
   }
 
   .edit-button,
   .info-button,
   .save-button {
-    padding: 5px;
     background-color: #cab29a;
     border-color: #cab29a;
     color: black;
-    border-radius: 5px;
     margin-left: 5px;
   }
   
   .delete-button {
-    padding: 5px;
     background-color: #cab29a;
     border-color: #cab29a;
     color: black;
-    border-radius: 5px;
     margin-left: 5px;
   }
 
@@ -210,16 +206,46 @@
     margin-bottom: 10px;
   }
 
+  .text {
+    margin-left: 5px;
+    margin-right: 5px;
+  }
+
+  .new-password {
+    margin-left: 5px;
+    border-radius: 10px;
+  }
+
+  .statistics {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-left: 55px;
+    padding: 5px;
+    background-color: #cab29a;
+    border-color: #cab29a;
+    color: black;
+    border-radius: 10px;
+  }
+
   .input {
     height: 30px;
     width: 100px;
     margin-right: 5px;
+    border-radius: 10px;
+  }
+
+  .input-prom-upc {
+    height: 30px;
+    width: 150px;
+    margin-right: 5px;
+    border-radius: 10px;
   }
 
   .input-check {
     height: 30px;
     width: 250px;
     margin-right: 5px;
+    border-radius: 10px;
   }
 
   .input-category,
@@ -227,11 +253,27 @@
   .input-characteristics,
   .input-product-select {
     margin-right: 5px;
+    border-radius: 10px;
   }
 
   .input-cashier,
   .input-product {
     margin-left: 25px;
+    border-radius: 10px;
+  }
+
+  .input-d {
+    width: auto;
+    border-radius: 10px;
+    padding: 3px;
+  }
+
+  .login-button {
+    width: 100px;
+    border-radius: 10px;
+    font-size: large;
+    background-color: #9a7755;
+    color: white;
   }
   
   .input-date {
@@ -239,6 +281,7 @@
     margin-left: 25px;
     margin-top: 5px;
     margin-right: 10px;
+    border-radius: 10px;
   }
 
   @media (max-width: 1200px) {
@@ -393,6 +436,19 @@
       width: auto;
     }
   }
+
+  input {
+    border-color: #292524;
+    padding-left: 5px;
+    border-width: 1px;
+  }
+
+  select {
+    width: auto;
+    height: 30px;
+    border-radius: 10px;
+  }
+
   /* TABLE */
   table td,
   table,
@@ -405,9 +461,9 @@
     margin: 0 auto;
   }
   table th {
+    border: 0.5px solid #292524;
     background-color: #81726f;
     color: white;
-    border: 0.5px solid white;
     font-size: 20px;
     height: 35px;
     text-align: center;

@@ -1,6 +1,7 @@
 const express = require('express');
 const mysql = require('mysql2')
 const cors = require('cors')
+const crypto = require('crypto');
 
 const app = express()
 app.use(cors())
@@ -11,7 +12,6 @@ const db = mysql.createConnection({
     password: 'melnykbdSQL2024',
     database: 'supermarket'
 });
-
 
 app.get('/', (re, res)=>{
     return res.json("From Backend Side");
@@ -39,30 +39,6 @@ app.get('/employee', (req, res) => {
     }
 })
 
-app.post('/login', (req, res) => {
-    const id = req.query.id;
-    const password = req.query.password;
-    let sql;
-
-    if(id && password) {
-        sql = "SELECT id_employee, empl_role FROM `employee` WHERE id_employee = ? AND password = ?";
-        db.query(sql, [id, password], (err, data) => {
-            if(err) return res.status(500).json({ error: 'Internal Server Error' });
-            if(data.length === 0) {
-                return res.status(401).json({ error: 'Invalid ID or password' });
-            } else {
-                const employee = data[0];
-                if(employee.empl_role === 'manager') {
-                    return res.status(200).json({ message: 'Login successful', role: 'manager' });
-                } else if (employee.empl_role === 'cashier') {
-                    return res.status(200).json({ message: 'Login successful', role: 'cashier', ID: employee.id_employee });
-                }
-            }
-            
-        });
-    }
-});
-
 app.post('/employee', (req, res) => {
     const surname = req.query.surname;
     const name = req.query.name;
@@ -75,22 +51,19 @@ app.post('/employee', (req, res) => {
     const zipCode = req.query.zipCode;
     const dateBirth = req.query.dateBirth;
     const dateStart = req.query.dateStart;
+    const password = req.query.password;
     let sql;
 
-    if (surname && name && patronymic && phone && city && street && zipCode && role && salary && dateBirth && dateStart){
-        sql = "INSERT INTO `employee` (id_employee, empl_surname, empl_name, empl_patronymic, empl_role, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        db.query(sql, [surname, name, patronymic, role, salary, dateBirth, dateStart, phone, city, street, zipCode], (err, data)=>{
-            if(err) return res.json(err);
-            return res.json(data);
-        });
-    } else if (surname && name && phone && city && street && zipCode && role && salary && dateBirth && dateStart){
-        sql = "INSERT INTO `employee` (id_employee, empl_surname, empl_name, empl_patronymic, empl_role, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code) VALUES (NULL, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?)";
-        db.query(sql, [surname, name, role, salary, dateBirth, dateStart, phone, city, street, zipCode], (err, data)=>{
+    if (surname && name && phone && city && street && zipCode && role && salary && dateBirth && dateStart && password){
+        const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
+
+        sql = "INSERT INTO `employee` (id_employee, empl_surname, empl_name, empl_patronymic, empl_role, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code, password) VALUES (NULL, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        db.query(sql, [surname, name, role, salary, dateBirth, dateStart, phone, city, street, zipCode, hashedPassword], (err, data)=>{
             if(err) return res.json(err);
             return res.json(data);
         });
     }
-})
+});
 
 app.post('/employee/:id', (req, res) => {
     const emplID = req.params.id;
@@ -111,15 +84,25 @@ app.post('/employee/:id', (req, res) => {
         sql = "UPDATE `employee` SET empl_surname = ?, empl_name = ?, empl_patronymic = ?, empl_role = ?, salary = ?, date_of_birth = ?, date_of_start = ?, phone_number = ?, city = ?, street = ?, zip_code = ? WHERE id_employee = ?";
         db.query(sql, [surname, name, patronymic, role, salary, dateBirth, dateStart, phone, city, street, zipCode, emplID], (err, data) => {
             if(err) return res.json(err);
-            return res.json(data);});
+            return res.json(data);
+        });
     }
+})
 
-    // if (surname && name && phone && city && street && zipCode && role && salary){
-    //     sql = "UPDATE `employee` SET empl_surname = ?, empl_name = ?, empl_patronymic = ?, empl_role = ?, salary = ?, phone_number = ?, city = ?, street = ?, zip_code = ? WHERE id_employee = ?";
-    //     db.query(sql, [surname, name, patronymic, role, salary, phone, city, street, zipCode, emplID], (err, data) => {
-    //         if(err) return res.json(err);
-    //         return res.json(data);});
-    // }
+app.post('/updatePassword', (req, res) => {
+    const id = req.query.id;
+    const password = req.query.password;
+    let sql;
+
+    if (id && password) {
+        const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
+
+        sql = "UPDATE `employee` SET password = ? WHERE id_employee = ?";
+        db.query(sql, [hashedPassword, id], (err, data) => {
+            if(err) return res.json(err);
+            return res.json(data);
+        });
+    }
 })
 
 app.delete('/employee/:id', (req, res) => {
@@ -313,6 +296,25 @@ app.get('/productsInStore', (req, res)=>{
     }
 });
 
+app.get('/productsInStoreForCheck', (req, res)=>{
+    
+    const sql = "SELECT upc, id_product, (SELECT product_name FROM product WHERE id_product = store_product.id_product) AS product_name, selling_price, products_number, promotional_product, (SELECT category_name FROM category WHERE category_number = (SELECT category_number FROM product WHERE id_product = store_product.id_product)) AS category_name FROM store_product WHERE products_number > 0";
+    db.query(sql, (err, data)=>{
+        if(err) return res.json(err); 
+        return res.json(data);
+    });
+});
+
+app.get('/nonPromProductsInStore', (req, res)=>{
+    
+    const sql = "SELECT upc, upc_prom, id_product, (SELECT product_name FROM product WHERE id_product = store_product.id_product) AS product_name, selling_price, products_number, promotional_product FROM `store_product` WHERE upc_prom IS NULL AND products_number > 0";
+    db.query(sql, (err, data)=>{
+        if(err) return res.json(err);
+        return res.json(data);
+    });
+    
+});
+
 app.post('/productsInStore', (req, res) => {
     const idProduct = req.query.idProduct;
     const upc = req.query.upc;
@@ -322,8 +324,24 @@ app.post('/productsInStore', (req, res) => {
     let sql;
 
     if(idProduct && upc && price && prom && number){
-        sql = "INSERT INTO `store_product` (upc, upc_prom, id_product, selling_price, products_number, promotional_product) VALUES (?, ?, ?, ?, ?, ?);"
-        db.query(sql, [upc, upc, idProduct, price, number, prom], (err, data)=>{
+        sql = "INSERT INTO `store_product` (upc, upc_prom, id_product, selling_price, products_number, promotional_product) VALUES (?, NULL, ?, ?, ?, ?);"
+        db.query(sql, [upc, idProduct, price, number, prom], (err, data)=>{
+            if(err) return res.json(err);
+            return res.json(data);
+        });
+    }
+})
+
+app.post('/productsInStorePromotional', (req, res) => {
+    const upc = req.query.upc;
+    const upcProm = req.query.upcProm;
+    const number = req.query.number;
+    let sql;
+
+    if(upcProm && upc && number){
+        sql = "INSERT INTO `store_product` (upc, upc_prom, id_product, selling_price, products_number, promotional_product)" + 
+        " SELECT ?, ?, nsp.id_product, nsp.selling_price * 0.8, ?, 1 FROM `store_product` AS nsp WHERE nsp.upc = ?"
+        db.query(sql, [upc, upcProm, number, upcProm], (err, data)=>{
             if(err) return res.json(err);
             return res.json(data);
         });
@@ -335,12 +353,39 @@ app.post('/productsInStore/:id', (req, res) => {
     const prodID = req.query.prodID;
     const price = req.query.price;
     const number = req.query.number;
-    const prom = req.query.prom;
     let sql;
 
-    if(prodID && price && prom && number){
-        sql = "UPDATE `store_product` SET id_product = ?, selling_price = ?, products_number = ?, promotional_product = ? WHERE upc = ?"
-        db.query(sql, [prodID, price, number, prom, upc], (err, data)=>{
+    if(prodID && price && upc && number){
+        sql = "UPDATE `store_product` SET id_product = ?, selling_price = ?, products_number = ? WHERE upc = ?"
+        db.query(sql, [prodID, price, number, upc], (err, data)=>{
+            if(err) return res.json(err);
+            return res.json(data);
+        });
+    }
+})
+
+app.post('/productsInStoreUpdateProm', (req, res) => {
+    const upc = req.query.upc;
+    const upcProm = req.query.upcProm;
+    let sql;
+
+    if(upc && upcProm){
+        sql = "UPDATE `store_product` SET upc_prom = ? WHERE upc = ?"
+        db.query(sql, [upcProm, upc], (err, data)=>{
+            if(err) return res.json(err);
+            return res.json(data);
+        });
+    }
+})
+
+app.post('/updateNumberProd', (req, res) => {
+    const upc = req.query.upc;
+    const number = req.query.number;
+    let sql;
+
+    if(upc && number){
+        sql = "UPDATE `store_product` SET products_number = ? WHERE upc = ?"
+        db.query(sql, [number, upc], (err, data)=>{
             if(err) return res.json(err);
             return res.json(data);
         });
@@ -356,9 +401,10 @@ app.get('/promotionalProducts', (req, res) => {
 })
 
 app.delete('/productsInStore/:id', (req, res) => {
-    const productId = req.params.id;
-    const sql = "DELETE FROM store_product WHERE id_product = ?";
-    db.query(sql, [productId], (err, result) => {
+    const upc = req.params.id;
+
+    const sql = "DELETE FROM store_product WHERE upc = ?";
+    db.query(sql, [upc], (err, result) => {
       if (err) return res.status(500).json({ error: err.message });
       res.json({ message: "Product deleted successfully" });
     });
@@ -453,7 +499,6 @@ app.post('/checkUpdate', (req, res) => {
     const checkNum = req.query.checkNum;
     const sumTotal = req.query.sumTotal;
     const vat = req.query.vat;
-
     let sql;
 
     if (checkNum && sumTotal && vat) {
@@ -491,9 +536,9 @@ app.get('/check', (req, res) => {
     const startDate = req.query.startDate;
     const endDate = req.query.endDate;
     const employeeId = req.query.employeeId;
-
     let sql;
     let params = [];
+
     if (startDate && endDate && employeeId) {
         sql = "SELECT check_number, card_number, print_date, sum_total, vat, id_employee FROM `check` WHERE print_date BETWEEN ? AND ? AND id_employee = ?";
         params = [startDate, endDate, employeeId];
@@ -547,6 +592,12 @@ app.get('/checkNumber', (req, res) => {
         if (err) return res.status(500).json({ error: err.message });
         return res.json(data);
         });
+    } else if(employeeId) {
+        sql = "SELECT check_number, card_number, print_date, sum_total, vat, id_employee FROM `check` WHERE id_employee = ?";
+        db.query(sql, [employeeId], (err, data) => {
+        if (err) return res.status(500).json({ error: err.message });
+        return res.json(data);
+        });
     } else {
         sql = "SELECT check_number, card_number, print_date, sum_total, vat, id_employee FROM `check`";
         db.query(sql, (err, data) => {
@@ -570,9 +621,9 @@ app.get('/checkProducts', (req, res) => {
     const startDate = req.query.startDate;
     const endDate = req.query.endDate;
     const productId = req.query.productId;
-
     let sql;
     let params = [];
+
     if (startDate && endDate && productId) {
         sql = "SELECT sp.id_product, p.product_name, SUM(s.product_number) AS total_units_sold FROM `check` JOIN sale s ON `check`.check_number = s.check_number JOIN store_product sp ON s.upc = sp.upc JOIN product p ON sp.id_product = p.id_product WHERE `check`.print_date > ? AND `check`.print_date < ? AND p.id_product = ? GROUP BY sp.id_product, p.product_name;";
         params = [startDate, endDate, productId];
@@ -608,9 +659,9 @@ app.get('/sumCheck', (req, res) => {
     const startDate = req.query.startDate;
     const endDate = req.query.endDate;
     const employeeId = req.query.employeeId;
-
     let sql;
     let params = [];
+
     if (startDate && endDate && employeeId) {
         sql = "SELECT SUM(sum_total) AS sum FROM `check` WHERE print_date BETWEEN ? AND ? AND id_employee = ?";
         params = [startDate, endDate, employeeId];
@@ -646,7 +697,6 @@ app.get('/sales', (req, res) => {
     const checkNumber = req.query.checkNumber;
 
     const sql = "SELECT (SELECT product_name FROM product WHERE id_product = (SELECT id_product FROM store_product WHERE upc = s.upc)) AS product_name, s.product_number, s.selling_price FROM sale s WHERE s.check_number = ?";
-
     db.query(sql, [checkNumber], (err, data) => {
         if (err) return res.status(500).json({ error: err.message });
         return res.json(data);
@@ -660,8 +710,85 @@ app.delete('/check/:id', (req, res) => {
       if (err) return res.status(500).json({ error: err.message });
       res.json({ message: "Check deleted successfully" });
     });
-})
+});
+
+app.get('/customersStatistics', (req, res) => {
+    const sql = "SELECT cc.card_number, cc.cust_surname, cc.cust_name, COUNT(ch.check_number) AS total_purchases, " +
+   " SUM(ch.sum_total) AS total_sum, AVG(ch.sum_total) AS average_sum, " +
+   "GROUP_CONCAT(DISTINCT e.empl_surname SEPARATOR ', ') AS cashier_surnames " +
+   "FROM `customer_card` AS cc " +
+   "LEFT JOIN `check` AS ch ON cc.card_number = ch.card_number " +
+   "LEFT JOIN `employee` AS e ON ch.id_employee = e.id_employee " +
+   "GROUP BY cc.card_number";
+
+    db.query(sql, (err, data) => {
+        if(err) return res.json(err);
+        return res.json(data);
+    });
+});
+
+app.get('/custCategory', (req, res) => {
+    const category = req.query.category;
+
+    const sql = "SELECT DISTINCT * " +
+    "FROM customer_card AS cc " +
+    "WHERE NOT EXISTS (" +
+        "SELECT * " +
+        "FROM `check` AS c " +
+        "WHERE c.card_number = cc.card_number " +
+        "AND EXISTS (" +
+            "SELECT * " +
+            "FROM `sale` AS s " +
+            "INNER JOIN `store_product` AS sp ON sp.upc = s.upc " +
+            "INNER JOIN `product` AS p ON p.id_product = sp.id_product " +
+            "WHERE c.check_number = s.check_number " +
+            "AND p.category_number <> ?)" +
+    ") AND EXISTS (" +
+        "SELECT * " +
+        "FROM `check` AS c " +
+        "WHERE c.card_number = cc.card_number " +
+        "AND NOT EXISTS (" +
+            "SELECT * " +
+            "FROM `sale` AS s " +
+            "INNER JOIN `store_product` AS sp ON sp.upc = s.upc " +
+            "INNER JOIN `product` AS p ON p.id_product = sp.id_product " +
+            "WHERE c.check_number = s.check_number " +
+            "AND p.category_number <> ?))";
+
+    db.query(sql, [category, category], (err, data) => {
+        if (err) return res.status(500).json({ error: err.message });
+        return res.json(data);
+    });
+});
+
+app.post('/login', (req, res) => {
+    const id = req.query.id;
+    const password = req.query.password;
+
+    if (id && password) {
+        db.query("SELECT id_employee, password, empl_role FROM `employee` WHERE id_employee = ?", [id], (err, data) => {
+            if (err) return res.status(500).json({ error: 'Internal Server Error' });
+            if (data.length === 0) {
+                return res.status(401).json({ error: 'Invalid ID or password' });
+            } else {
+                const employee = data[0];
+                const hashedPasswordFromDB = employee.password;
+
+                const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
+
+                if (hashedPassword === hashedPasswordFromDB) {
+                    return res.status(200).json({ message: 'Login successful', role: employee.empl_role, ID: employee.id_employee });
+                } else {
+                    return res.status(401).json({ error: 'Invalid ID or password' });
+                }
+            }
+        });
+    }
+});
 
 app.listen(8081, ()=> {
     console.log("listen");
-})
+});
+
+// UPDATE employee
+// SET password = SHA2(password, 256);

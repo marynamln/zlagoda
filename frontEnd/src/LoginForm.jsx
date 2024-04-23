@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-function LoginForm({ setIsLoggedIn, setIsLoggedInCashier, setCashierInfo }) {
+function LoginForm({ setIsLoggedIn, setIsLoggedInCashier, setCashierInfo, setManagerInfo }) {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
 
@@ -20,6 +20,7 @@ function LoginForm({ setIsLoggedIn, setIsLoggedInCashier, setCashierInfo }) {
     .then(data => {
       if(data.role === 'manager') {
         setIsLoggedIn(true);
+        setManagerInfo(data.ID);
       } else if(data.role === 'cashier') {
         setIsLoggedInCashier(true);
         setCashierInfo(data.ID);
@@ -34,19 +35,18 @@ function LoginForm({ setIsLoggedIn, setIsLoggedInCashier, setCashierInfo }) {
   return (
     <div className="container">
             <div className="employee-header">
-            <h3>ZLAGODA</h3>
+            <h2>ZLAGODA</h2>
             </div>
             <div className="employee-header">
-              <label className="input-date">ID:</label>
-              <input
-                type="number" value={id} onChange={(e) => setId(e.target.value)} />
+            <p className='p'><strong>ID:</strong></p>
+              <input className="new-password" type="number" value={id} onChange={(e) => setId(e.target.value)} />
             </div>
             <div className="employee-header">
-              <label className="input-date" htmlFor="password">Password:</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <p className='p'><strong>Password:</strong></p>
+              <input className="new-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
             <div className="employee-header">
-            <button className="search-button" onClick={handleSubmit}>Log In</button>
+            <button className="login-button" onClick={handleSubmit}>Log In</button>
             </div>
         </div>
   );

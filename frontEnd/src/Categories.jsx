@@ -27,7 +27,7 @@ function Categories() {
     };
 
     const handleSave = (id) => {
-        fetch(`http://localhost:8081/products/${id}?newCategoryName=${editName}`, {
+        fetch(`http://localhost:8081/categories/${id}?newCategoryName=${editName}`, {
             method: 'POST',
         })
         .then(res => {

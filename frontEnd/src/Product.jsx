@@ -150,6 +150,11 @@ function Product() {
   };
 
   const handleAddProduct = () => {
+    if(newProductName.length == 0 || newProductCharacteristics.length == 0 || newProductCategory.length == 0){
+      alert("Not all required fields are filled!");
+      throw ("Not all required fields are filled!");
+    }
+
     const formattedProductName = newProductName.charAt(0).toUpperCase() + newProductName.slice(1);
 
     fetch(`http://localhost:8081/products?name=${formattedProductName}&characteristics=${newProductCharacteristics}&category=${newProductCategory}`, {

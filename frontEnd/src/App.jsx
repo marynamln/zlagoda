@@ -17,9 +17,11 @@ import AboutMeCashier from "./AboutMeCashier";
 import ChecksCashier from "./ChecksCashier";
 
 function App() {
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoggedInCashier, setIsLoggedInCashier] = useState(false);
   const [cashierInfo, setCashierInfo] = useState(null);
+  const [managerInfo, setManagerInfo] = useState(null);
   
   const [showForm, setShowForm] = useState(false); 
   const [currentCategory, setCurrentCategory] = useState("about-me");
@@ -37,10 +39,10 @@ function App() {
   const [productInStoreCashier, setProductInStoreCashier] = useState(false);
   const [customersCashier, setCustomersCashier] = useState(false);
   const [checksCashier, setChecksCashier] = useState(false);
-
+  
   return (
     <>
-        {(!isLoggedIn && !isLoggedInCashier) && <LoginForm setIsLoggedIn={setIsLoggedIn} setIsLoggedInCashier={setIsLoggedInCashier} setCashierInfo={setCashierInfo} />}
+        {(!isLoggedIn && !isLoggedInCashier) && <LoginForm setIsLoggedIn={setIsLoggedIn} setIsLoggedInCashier={setIsLoggedInCashier} setCashierInfo={setCashierInfo} setManagerInfo={setManagerInfo} />}
         {isLoggedIn && (
           <>
             <Header showForm={showForm} setShowForm={setShowForm} />
@@ -59,15 +61,16 @@ function App() {
                 isLoggedIn={isLoggedIn}
                 setIsLoggedInCashier={setIsLoggedInCashier}
                 isLoggedInCashier={isLoggedInCashier}
+                setManagerInfo={setManagerInfo}
             />
-            {aboutMe ? <AboutMe setAboutMe={setAboutMe} aboutMe={aboutMe} /> : null}
+            {aboutMe ? <AboutMe managerInfo={managerInfo} setAboutMe={setAboutMe} aboutMe={aboutMe} /> : null}
             {product ? <Product setProduct={setProduct} product={product} /> : null}
             {productInStore ? (<ProductInStore setProductInStore={setProductInStore} productInStore={productInStore} />
             ) : null}
             {showCategories ?  <Categories setShowCategories={setShowCategories} showCategories={showCategories} /> : null}
             {customers ? <Customers setCustomers={setCustomers} customers={customers} /> : null}
             {checks ? <Checks setChecks={setChecks} checks={checks} /> : null}
-            {employee ? <Employee setEmployee={setEmployee} employee={employee} /> : null}
+            {employee ? <Employee managerInfo={managerInfo} setEmployee={setEmployee} employee={employee} /> : null}
             </main>
           </>
         )} 

@@ -137,9 +137,9 @@ function Cheks() {
     <div className="cheks-container container">
         <div className="employee-header">
                 <label className="input-date">Start date: </label>
-                <input type="date" id="start" value={startDate} onChange={e => setStartDate(e.target.value)}/>
+                <input className="input-d" type="date" id="start" value={startDate} onChange={e => setStartDate(e.target.value)}/>
                 <label className="input-date">End date: </label>
-                <input type="date" id="end" value={endDate} onChange={e => setEndDate(e.target.value)}/>
+                <input className="input-d" type="date" id="end" value={endDate} onChange={e => setEndDate(e.target.value)}/>
                 <select className="input-cashier" value={selectedEmployee} onChange={e => setSelectedEmployee(e.target.value)}>
                     <option value="">All cashiers</option>
                     {employees.map(employee => (
@@ -156,9 +156,9 @@ function Cheks() {
 
             <div className="employee-header">
                 <label className="input-date">Start date: </label>
-                <input type="date" id="start" value={startDateProduct} onChange={e => setStartDateProduct(e.target.value)}/>
+                <input className="input-d" type="date" id="start" value={startDateProduct} onChange={e => setStartDateProduct(e.target.value)}/>
                 <label className="input-date">End date: </label>
-                <input type="date" id="end" value={endDateProduct} onChange={e => setEndDateProduct(e.target.value)}/>
+                <input className="input-d" type="date" id="end" value={endDateProduct} onChange={e => setEndDateProduct(e.target.value)}/>
                 <select className="input-product" value={selectedProduct} onChange={e => setSelectedProduct(e.target.value)}>
                     <option value="">All products</option>
                     {products.map(products => (

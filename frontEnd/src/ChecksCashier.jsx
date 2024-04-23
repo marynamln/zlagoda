@@ -25,7 +25,10 @@ function ChecksCashier({cashierInfo}) {
     const [isFieldsDisabled, setIsFieldsDisabled] = useState(false);
     const [isFieldsProdDisabled, setIsFieldsProdDisabled] = useState(true);
 
-    useEffect(()=>{
+    const [custStatistics, setCustStatistics] = useState([]);
+    const [openStatistics, setOpenStatistics] = useState(false);
+
+    useEffect(() => {
         fetch(`http://localhost:8081/checkCashierAll?employeeId=${cashierInfo}`)
         .then(res => res.json())
         .then(data => {
@@ -33,7 +36,7 @@ function ChecksCashier({cashierInfo}) {
         })
         .catch(err => console.log(err));
 
-        fetch('http://localhost:8081/productsInStore')
+        fetch('http://localhost:8081/productsInStoreForCheck')
             .then(res => res.json())
             .then(data => {
                 setAllProducts(data);
@@ -152,10 +155,11 @@ function ChecksCashier({cashierInfo}) {
         fetch(`http://localhost:8081/saleTotal?checkNum=${newCheckNum}&cardNum=${custCard}`)
         .then(res => res.json())
         .then(data => {
-            const sumTotal = data.total;
+            const sumTotal = parseFloat(data.total);
             const vat = sumTotal * 0.2;
+            const newSum = sumTotal + vat;
 
-            fetch(`http://localhost:8081/checkUpdate?checkNum=${newCheckNum}&sumTotal=${sumTotal}&vat=${vat}`, {
+            fetch(`http://localhost:8081/checkUpdate?checkNum=${newCheckNum}&sumTotal=${newSum}&vat=${vat}`, {
                 method: 'POST',
             })
             .then(res => {
@@ -181,9 +185,21 @@ function ChecksCashier({cashierInfo}) {
             .catch(err => console.log(err.message));
         })
         .catch(err => console.log(err));
+
+        fetch('http://localhost:8081/customersStatistics')
+        .then(res => res.json())
+        .then(data => {
+            setCustStatistics(data);
+        })
+        .catch(err => console.log(err));
     };
 
     const handleSave = () => {
+        if(newCheckNum.length == 0){
+            alert("Not all required fields are filled!");
+            throw ("Not all required fields are filled!");
+        }
+
         const existingCheck = allChecks.find(check => check.check_number === newCheckNum);
         if (existingCheck) {
             alert("Check with the same number already exists!");
@@ -211,6 +227,26 @@ function ChecksCashier({cashierInfo}) {
     };
 
     const handleAddProd = () => {
+        if(addProductCheck.length == 0 || numberProd.length == 0){
+            alert("Not all required fields are filled!");
+            throw ("Not all required fields are filled!");
+        }
+
+        if(numberProd < 0) {
+            alert("Number of products cannot be negative!");
+            setNumberProd('');
+            throw ("Number of products cannot be negative!");
+        }
+
+        const selectedProduct = allProducts.find(product => product.upc === addProductCheck);
+        let newNum = selectedProduct.products_number - numberProd;
+
+        if(selectedProduct.products_number < numberProd) {
+            alert("The product quantity is too large!");
+            setNumberProd('');
+            throw ("The product quantity is too large!");
+        }
+        
         fetch(`http://localhost:8081/sale?upc=${addProductCheck}&checkNum=${newCheckNum}&prodNum=${numberProd}`, {
             method: 'POST',
         })
@@ -220,12 +256,37 @@ function ChecksCashier({cashierInfo}) {
             }
         })
         .then(() => {
-            setAddedProducts([...addedProducts, { product: addProductCheck, quantity: numberProd }]);
+            setAddedProducts([...addedProducts, { product: selectedProduct.product_name, quantity: numberProd }]);
             
             setNumberProd('');
             setAddProductCheck('');
         })
         .catch(err => console.log(err.message));
+
+        fetch(`http://localhost:8081/updateNumberProd?upc=${addProductCheck}&number=${newNum}`, {
+            method: 'POST',
+        })
+        .then(res => {
+        if (res.ok) {
+            return res.json();
+        }
+        })
+        .catch(err => console.log(err.message));
+    };
+
+    const handleCustomerStatistics = () => {
+        setOpenStatistics(true);
+
+        fetch('http://localhost:8081/customersStatistics')
+        .then(res => res.json())
+        .then(data => {
+            setCustStatistics(data);
+        })
+        .catch(err => console.log(err));
+    };
+
+    const handleCloseStatistics = () => {
+        setOpenStatistics(false);
     };
 
     return (
@@ -246,9 +307,9 @@ function ChecksCashier({cashierInfo}) {
 
         <div className="employee-header">
                 <label className="input-date">Start date: </label>
-                <input type="date" id="start" value={startDate} onChange={e => setStartDate(e.target.value)}/>
+                <input className="input-d" type="date" id="start" value={startDate} onChange={e => setStartDate(e.target.value)}/>
                 <label className="input-date">End date: </label>
-                <input type="date" id="end" value={endDate} onChange={e => setEndDate(e.target.value)}/>
+                <input className="input-d" type="date" id="end" value={endDate} onChange={e => setEndDate(e.target.value)}/>
 
                 <button className="search-button" onClick={handleSearchChecksDate}>Search</button>
         </div>
@@ -260,7 +321,7 @@ function ChecksCashier({cashierInfo}) {
             {showAddCheck && (
                 <div className="modal">
                     <div className="employee-header">
-                        <input type="number" placeholder="New check number" min={0} value={newCheckNum} onChange={(e) => setNewCheckNum(e.target.value)} disabled={isFieldsDisabled}/>
+                        <input className="input-check" type="number" placeholder="New check number" min={0} value={newCheckNum} onChange={(e) => setNewCheckNum(e.target.value)} disabled={isFieldsDisabled}/>
                     </div>
 
                     <div className="employee-header">
@@ -277,13 +338,13 @@ function ChecksCashier({cashierInfo}) {
                     </div>
 
                     <div className="employee-header">
-                        <p>Add products:</p>
+                        <p><strong>Add products:</strong></p>
                     </div>
 
                     <div className="employee-header">
                         <p>
                         {addedProducts.map((d, i) => (
-                            <p key={i}> {d.product}, Quantity: {d.quantity}</p>
+                            <p key={i}> <strong>Name: </strong>{d.product}, <strong>Quantity: </strong>{d.quantity}</p>
                         ))}
                         </p>
                     </div>
@@ -292,15 +353,15 @@ function ChecksCashier({cashierInfo}) {
                         <select className="input-product-select" value={addProductCheck} onChange={(e) => setAddProductCheck(e.target.value)} disabled={isFieldsProdDisabled}>
                         <option>Select product</option>
                         {allProducts.map((d, i) => (
-                            <option key={i} value={d.upc}> {d.upc} - {d.product_name}</option>
+                            <option key={i} value={d.upc}> {d.upc} - {d.product_name} - prom {d.promotional_product} - number {d.products_number}</option>
                         ))}
                         </select>
-                        <input type="number" placeholder="Number of product" min={0} value={numberProd} onChange={(e) => setNumberProd(e.target.value)} disabled={isFieldsProdDisabled}/>
+                        <input className="input-d" type="number" placeholder="Number of product" min={0} value={numberProd} onChange={(e) => setNumberProd(e.target.value)} disabled={isFieldsProdDisabled}/>
                         <button className="search-button" onClick={handleAddProd} disabled={isFieldsProdDisabled}>Add</button>
                     </div>
 
                     <div className="employee-header">
-                        <button className="search-button" onClick={handleSaveCheck} disabled={isFieldsProdDisabled}>Save</button>
+                        <button className="search-button" onClick={handleSaveCheck}>Save</button>
                     </div>
                 </div>
             )}
@@ -363,6 +424,40 @@ function ChecksCashier({cashierInfo}) {
                 </div>
             </div>
         )}
+        {!openStatistics && <button className='statistics' onClick={handleCustomerStatistics}>Statistics</button>}
+        {openStatistics && <button className='statistics' onClick={handleCloseStatistics}>Close statistics</button>}
+        <div>
+            {openStatistics &&
+                <div className="modal">
+                    <div className="employee-header">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Card</th>
+                                <th>Name</th>
+                                <th>Total purchases</th>
+                                <th>Total sum</th>
+                                <th>Average sum</th>
+                                <th>Cashiers</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {custStatistics.map((d, index) => (
+                                <tr key={index}>
+                                    <td>{d.card_number}</td>
+                                    <td>{d.cust_surname} {d.cust_name}</td>
+                                    <td>{d.total_purchases}</td>
+                                    <td>{d.total_sum}</td>
+                                    <td>{d.average_sum}</td>
+                                    <td>{d.cashier_surnames}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    </div>    
+                </div>    
+            }
+        </div>
     </div>
     );
 }

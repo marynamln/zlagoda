@@ -1,35 +1,36 @@
 import React, { useState, useEffect } from 'react';
 
-function Employee() {
+function Employee({ managerInfo }) {
     const [data, setData] = useState([]);
     const [sortedData, setSortedData] = useState([]);
     const [sortDirection, setSortDirection] = useState('asc');
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [surname, setSurname] = useState('');
-    const [surnameNew, setSurnameNew] = useState([]);
-    const [name, setName] = useState([]);
-    const [patronymic, setPatronymic] = useState([]);
-    const [role, setRole] = useState([]);
-    const [salary, setSalary] = useState([]);
-    const [dateBirth, setDateBirth] = useState([]);
-    const [dateStart, setDateStart] = useState([]);
-    const [phone, setPhone] = useState([]);
-    const [city, setCity] = useState([]);
-    const [street, setStreet] = useState([]);
-    const [zip, setZip] = useState([]);
+    const [surnameNew, setSurnameNew] = useState('');
+    const [name, setName] = useState('');
+    const [patronymic, setPatronymic] = useState('');
+    const [role, setRole] = useState('');
+    const [salary, setSalary] = useState('');
+    const [dateBirth, setDateBirth] = useState('');
+    const [dateStart, setDateStart] = useState('');
+    const [phone, setPhone] = useState('');
+    const [city, setCity] = useState('');
+    const [street, setStreet] = useState('');
+    const [zip, setZip] = useState('');
+    const [password, setPassword] = useState('');
     
     const [editedData, setEditedData] = useState([...sortedData]);
-    const [editSurname, setEditSurname] = useState([]);
-    const [editName, setEditName] = useState([]);
-    const [editPatronymic, setEditPatronymic] = useState([]);
-    const [editRole, setEditRole] = useState([]);
-    const [editSalary, setEditSalary] = useState([]);
-    const [editPhone, setEditPhone] = useState([]);
-    const [editCity, setEditCity] = useState([]);
-    const [editStreet, setEditStreet] = useState([]);
-    const [editZip, setEditZip] = useState([]);
-    const [editDateBirth, setEditDateBirth] = useState([]);
-    const [editDateStart, setEditDateStart] = useState([]);
+    const [editSurname, setEditSurname] = useState('');
+    const [editName, setEditName] = useState('');
+    const [editPatronymic, setEditPatronymic] = useState('');
+    const [editRole, setEditRole] = useState('');
+    const [editSalary, setEditSalary] = useState('');
+    const [editPhone, setEditPhone] = useState('');
+    const [editCity, setEditCity] = useState('');
+    const [editStreet, setEditStreet] = useState('');
+    const [editZip, setEditZip] = useState('');
+    const [editDateBirth, setEditDateBirth] = useState('');
+    const [editDateStart, setEditDateStart] = useState('');
 
     useEffect(()=>{
         fetch('http://localhost:8081/employee')
@@ -60,12 +61,16 @@ function Employee() {
 
         setEditDateBirth(formattedDate);
         setEditDateStart(formattedDateStart);
-
         // setEditDateBirth(updatedData[index].date_of_birth);
         // setEditDateStart(updatedData[index].date_of_start);
     };
 
     const handleSave = (id) => {
+        if(editSurname.length == 0 || editName.length == 0 || editDateBirth.length == 0 || editDateStart.length == 0 || editCity.length == 0 || editStreet.length == 0 || editZip.length == 0 || editPhone.length == 0){
+            alert("Not all required fields are filled!");
+            throw ("Not all required fields are filled!");
+        }
+
         const today = new Date();
         const birthDate = new Date(editDateBirth);
         const startDate = new Date(editDateStart);
@@ -76,7 +81,7 @@ function Employee() {
             throw ("Date of birth cannot be in the future!");
         }
 
-        const age = today.getFullYear() - birthDate.getFullYear();
+        let age = today.getFullYear() - birthDate.getFullYear();
         const monthDiff = today.getMonth() - birthDate.getMonth();
         if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
             age--;
@@ -92,6 +97,24 @@ function Employee() {
             alert("Date cannot be in the future!");
             setEditDateStart('');
             throw ("Date cannot be in the future!");
+        }
+
+        if(salary < 0) {
+            alert("Salary cannot be in negative!");
+            setEditSalary('');
+            throw ("Salary cannot be in negative!");
+        }
+
+        if(editPhone.length > 13){
+            alert("Phone number is too long! It should not exceed 13 characters.");
+            setEditPhone('');
+            throw ("Phone number is too long!");
+        }
+
+        if(editZip.length > 5) {
+            alert("Zip code is too long! It should not exceed 5 characters.");
+            setEditZip('');
+            throw ("Zip code is too long!");
         }
 
         fetch(`http://localhost:8081/employee/${id}?surname=${editSurname}&name=${editName}&patronymic=${editPatronymic}&role=${editRole}&salary=${editSalary}&dateBirth=${editDateBirth}&dateStart=${editDateStart}&phone=${editPhone}&city=${editCity}&street=${editStreet}&zipCode=${editZip}`, {
@@ -225,6 +248,23 @@ function Employee() {
     };
 
     const handleAdd = () => {
+        if(surnameNew.length == 0 || name.length == 0 || role.length == 0 || salary.length == 0 || phone.length == 0 || city.length == 0 || street.length == 0 || zip.length == 0 || dateBirth.length == 0 || dateStart.length == 0 || password.length == 0) {
+            alert("Not all required fields are filled!");
+            throw ("Not all required fields are filled!");
+        }
+
+        if(password.length > 64) {
+            alert("Password is too long! It should not exceed 5 characters.");
+            setPassword('');
+            throw ("Password is too long!");
+        }
+
+        if(phone.length > 13) {
+            alert("Phone number is too long! It should not exceed 13 characters.");
+            setPhone('');
+            throw ("Phone number is too long!");
+        }
+
         const existingPhone = data.find(empl => empl.phone_number === phone);
         if (existingPhone) {
             alert("Employee with the same phone number already exists!");
@@ -242,7 +282,7 @@ function Employee() {
             throw ("Dates cannot be in the future!");
         }
 
-        const age = today.getFullYear() - birthDate.getFullYear();
+        let age = today.getFullYear() - birthDate.getFullYear();
         const monthDiff = today.getMonth() - birthDate.getMonth();
         if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
             age--;
@@ -260,7 +300,13 @@ function Employee() {
             throw ("Dates cannot be in the future!");
         }
 
-        fetch(`http://localhost:8081/employee?surname=${surnameNew}&name=${name}&patronymic=${patronymic}&role=${role}&salary=${salary}&phone=${phone}&city=${city}&street=${street}&zipCode=${zip}&dateBirth=${dateBirth}&dateStart=${dateStart}`, {
+        if(salary < 0) {
+            alert("Salary cannot be in negative!");
+            setSalary('');
+            throw ("Salary cannot be in negative!");
+        }
+
+        fetch(`http://localhost:8081/employee?surname=${surnameNew}&name=${name}&patronymic=${patronymic}&role=${role}&salary=${salary}&phone=${phone}&city=${city}&street=${street}&zipCode=${zip}&dateBirth=${dateBirth}&dateStart=${dateStart}&password=${password}`, {
             method: 'POST',
         })
         .then(res => {
@@ -280,6 +326,7 @@ function Employee() {
             setDateStart('');
             setRole('');
             setSalary('');
+            setPassword('');
         })
         .catch(err => console.log(err.message));
 
@@ -306,7 +353,7 @@ function Employee() {
             <hr className='line'></hr>
 
             <div className="employee-header">  
-                <input type="text" placeholder="Enter surname" value={surname} onChange={handleSurnameSearch}></input>
+                <input className="input" type="text" placeholder="Enter surname" value={surname} onChange={handleSurnameSearch}></input>
                 <button className="search-button" onClick={searchEmployeeBySurname}>Search</button> 
             </div>
 
@@ -328,13 +375,14 @@ function Employee() {
                 <input className="input" type="text" placeholder="Zip code" value={zip} onChange={(e) => setZip(e.target.value)}></input>
             </div>
 
-            <hr className='line'></hr>
-
             <div className="employee-header">  
-            <label className="input-date">Date of birth: </label>
-                <input type="date" value={dateBirth} onChange={(e) => setDateBirth(e.target.value)}/>
+                <label className="input-date">Date of birth: </label>
+                <input className="input-d" type="date" value={dateBirth} onChange={(e) => setDateBirth(e.target.value)}/>
                 <label className="input-date">Start date: </label>
-                <input type="date" value={dateStart} onChange={(e) => setDateStart(e.target.value)}/>
+                <input className="input-d" type="date" value={dateStart} onChange={(e) => setDateStart(e.target.value)}/>
+                <label className="input-date">Password: </label>
+                <input className="input" type='text' placeholder="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+
                 <button className="add-button" onClick={handleAdd}>Add employee</button>
             </div>
 
@@ -387,7 +435,7 @@ function Employee() {
                                 }     
                             </td>
                             <td>
-                                {d.isEditing ? (
+                                {(d.isEditing) && !(d.id_employee === managerInfo) ? (
                                     <select value={editRole} onChange={(e) => setEditRole(e.target.value)}>
                                         <option value="manager">manager</option>
                                         <option value="cashier">cashier</option>
@@ -395,7 +443,7 @@ function Employee() {
                                 ) : (d.empl_role)}
                             </td>
                             <td>
-                                {d.isEditing ? (
+                                {(d.isEditing) && !(d.id_employee === managerInfo) ? (
                                     <input className="input" type="number" min={1} value={editSalary} onChange={(e) => setEditSalary(e.target.value)}></input>
                                 ) : (d.salary)}
                             </td>
@@ -438,33 +486,13 @@ function Employee() {
                                 ) : (
                                     <>
                                         <button className="edit-button" onClick={() => handleEdit(i)}>Edit</button>
-                                        <button className="delete-button" onClick={() => handleDelete(d.id_employee)}>Delete</button>
+                                        {!(d.id_employee === managerInfo) &&
+                                        <button className="delete-button" onClick={() => handleDelete(d.id_employee)}>Delete</button>}
                                     </>
                                 )}
                             </td>
                         </tr>
                     ))}
-
-                        {/* {sortedData.map((d,i) => (
-                            <tr key={i}>
-                                <td>{d.id_employee}</td>
-                                <td>{d.empl_surname}</td>
-                                <td>{d.empl_name}</td>
-                                <td>{d.empl_patronymic}</td>
-                                <td>{d.empl_role}</td>
-                                <td>{d.salary}</td>
-                                <td>{d.date_of_birth}</td>
-                                <td>{d.date_of_start}</td>
-                                <td>{d.phone_number}</td>
-                                <td>{d.city}</td>
-                                <td>{d.street}</td>
-                                <td>{d.zip_code}</td>
-                                <td>
-                                    <button className="edit-button">Edit</button>
-                                    <button className="delete-button" onClick={() => handleDelete(d.id_employee)}>Delete</button>
-                                </td>
-                            </tr>
-                        ))} */}
                     </tbody>
                 </table>
             </div>
