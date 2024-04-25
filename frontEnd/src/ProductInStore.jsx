@@ -400,15 +400,15 @@ function ProductInStore() {
             <hr className='line'></hr>
 
             <div className="employee-header">
-                <input className="input" type="number" placeholder="New UPC" value={newProductUPC} onChange={(e) => setNewProductUPC(e.target.value)}></input>
+                <input className="input" type="text" placeholder="New UPC" value={newProductUPC} onChange={(e) => setNewProductUPC(e.target.value)}></input>
                 <select className="input-product-select" value={newProductID} onChange={(e) => setNewProductID(e.target.value)}>
                     <option>Select product</option>
                     {products.map((d, i) => (
                         <option key={i} value={d.id_product}> {d.id_product} - {d.product_name}</option>
                     ))}
                 </select>
-                <input className="input" type="number" min={0} placeholder="Price" value={newProductPrice} onChange={(e) => setNewProductPrice(e.target.value)}></input>
-                <input className="input" type="number" min={1} placeholder="Number" value={newProductNumber} onChange={(e) => setNewProductNumber(e.target.value)}></input>
+                <input className="input" type="text" placeholder="Price" value={newProductPrice} onChange={(e) => setNewProductPrice(e.target.value)}></input>
+                <input className="input" type="text" placeholder="Number" value={newProductNumber} onChange={(e) => setNewProductNumber(e.target.value)}></input>
                 
                 <button className="add-button" onClick={handleAdd}>Add product</button>
             </div>
@@ -416,14 +416,14 @@ function ProductInStore() {
             <hr className='line'></hr>
 
             <div className="employee-header">
-                <input className="input-prom-upc" type="number" placeholder="Promotional UPC" value={newUpcProm} onChange={(e) => setNewUpcProm(e.target.value)}></input>
+                <input className="input-prom-upc" type="text" placeholder="Promotional UPC" value={newUpcProm} onChange={(e) => setNewUpcProm(e.target.value)}></input>
                 <select className="input-product-select" value={otherUpcProm} onChange={(e) => setOtherUpcProm(e.target.value)}>
                     <option value={''}>Select product</option>
                     {nonPromProducts.map((d, i) => (
                         <option key={i} value={d.upc}> {d.upc} - {d.product_name}, number - {d.products_number} </option>
                     ))}
                 </select>
-                <input className="input" type="number" min={1} placeholder="Number" value={numberProm} onChange={(e) => setNumberProm(e.target.value)}></input>
+                <input className="input" type="text" placeholder="Number" value={numberProm} onChange={(e) => setNumberProm(e.target.value)}></input>
                 
                 <button className="add-button" onClick={handleAddPromotional}>Add promotional product</button>
             </div>
@@ -470,14 +470,14 @@ function ProductInStore() {
                             <td>{d.category_name}</td>
                             <td>
                                 {d.isEditing ?
-                                (<input className="input-categoty" type="number" min={0} value={editPrice} onChange={(e) => setEditPrice(e.target.value)}/>
+                                (<input className="input-categoty" type="text" value={editPrice} onChange={(e) => setEditPrice(e.target.value)}/>
                                 ) : 
                                 (d.selling_price)
                                 }                                
                             </td>
                             <td>
                                 {d.isEditing ?
-                                (<input className="input-categoty" type="number" min={1} value={editNumber} onChange={(e) => setEditNumber(e.target.value)}/>
+                                (<input className="input-categoty" type="text" value={editNumber} onChange={(e) => setEditNumber(e.target.value)}/>
                                 ) : 
                                 (d.products_number)
                                 }                                
@@ -496,21 +496,6 @@ function ProductInStore() {
                             </td>
                         </tr>
                     ))}
-
-                        {/* {sortedData.map((d,i) => (
-                            <tr key={i}>
-                                <td>{d.upc}</td>
-                                <td>{d.product_name}</td>
-                                <td>{d.category_name}</td>
-                                <td>{d.selling_price}</td>
-                                <td>{d.products_number}</td>
-                                <td>{d.promotional_product}</td>                  
-                                <td>
-                                    <button className="edit-button">Edit</button>
-                                    <button className="delete-button" onClick={() => handleDelete(d.id_product)}>Delete</button>
-                                </td>
-                            </tr>
-                        ))} */}
                     </tbody>
                 </table>
             </div>

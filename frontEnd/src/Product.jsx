@@ -14,7 +14,7 @@ function Product() {
   const [editCategory, setEditCategory] = useState('');
   const [editCharacteristics, setEditCharacteristics] = useState('');
 
-  useEffect(()=>{
+  useEffect(() => {
     fetch('http://localhost:8081/categories')
       .then(res => res.json())
       .then(data => {

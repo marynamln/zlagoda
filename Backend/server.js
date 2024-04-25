@@ -132,6 +132,24 @@ app.get('/customers', (req, res)=>{
     }
 });
 
+app.get('/customersPercent', (req, res)=>{
+    const percent = req.query.percent;
+    let sql;
+    if (percent) {
+        sql = "SELECT card_number, cust_surname, cust_name, cust_patronymic, phone_number, city, street, zip_code, percent FROM customer_card WHERE percent = ?";
+        db.query(sql, [percent], (err, data)=>{
+            if(err) return res.json(err);
+            return res.json(data);
+        });
+    } else {
+        sql = "SELECT card_number, cust_surname, cust_name, cust_patronymic, phone_number, city, street, zip_code, percent FROM customer_card";
+        db.query(sql, (err, data)=>{
+            if(err) return res.json(err);
+            return res.json(data);
+        });
+    }
+});
+
 app.post('/customers', (req, res) => {
     const card = req.query.card;
     const surname = req.query.surname;
@@ -620,32 +638,32 @@ app.get('/checkCashierAll', (req, res) => {
 app.get('/checkProducts', (req, res) => {
     const startDate = req.query.startDate;
     const endDate = req.query.endDate;
-    const productId = req.query.productId;
+    const productUpc = req.query.productUpc;
     let sql;
     let params = [];
 
-    if (startDate && endDate && productId) {
-        sql = "SELECT sp.id_product, p.product_name, SUM(s.product_number) AS total_units_sold FROM `check` JOIN sale s ON `check`.check_number = s.check_number JOIN store_product sp ON s.upc = sp.upc JOIN product p ON sp.id_product = p.id_product WHERE `check`.print_date > ? AND `check`.print_date < ? AND p.id_product = ? GROUP BY sp.id_product, p.product_name;";
-        params = [startDate, endDate, productId];
+    if (startDate && endDate && productUpc) {
+        sql = "SELECT sp.upc, p.product_name, SUM(s.product_number) AS total_units_sold FROM `check` JOIN sale s ON `check`.check_number = s.check_number JOIN store_product sp ON s.upc = sp.upc JOIN product p ON sp.id_product = p.id_product WHERE `check`.print_date > ? AND `check`.print_date < ? AND sp.upc = ? GROUP BY sp.upc, p.product_name;";
+        params = [startDate, endDate, productUpc];
     } else if (startDate && endDate){
-        sql = "SELECT SUM(s.product_number) AS total_units_sold FROM `check` JOIN sale s ON `check`.check_number = s.check_number JOIN store_product sp ON s.upc = sp.upc JOIN product p ON sp.id_product = p.id_product WHERE `check`.print_date > ? AND `check`.print_date < ? GROUP BY sp.id_product, p.product_name;";
+        sql = "SELECT sp.upc, p.product_name, SUM(s.product_number) AS total_units_sold FROM `check` JOIN sale s ON `check`.check_number = s.check_number JOIN store_product sp ON s.upc = sp.upc JOIN product p ON sp.id_product = p.id_product WHERE `check`.print_date > ? AND `check`.print_date < ? GROUP BY sp.upc, p.product_name;";
         params = [startDate, endDate];
-    } else if (startDate && productId) {
-        sql = "SELECT sp.id_product, p.product_name, SUM(s.product_number) AS total_units_sold FROM `check` JOIN sale s ON `check`.check_number = s.check_number JOIN store_product sp ON s.upc = sp.upc JOIN product p ON sp.id_product = p.id_product WHERE `check`.print_date > ? AND p.id_product = ? GROUP BY sp.id_product, p.product_name;";
-        params = [startDate, productId];
-    } else if (endDate && productId) {
-        sql = "SELECT sp.id_product, p.product_name, SUM(s.product_number) AS total_units_sold FROM `check` JOIN sale s ON `check`.check_number = s.check_number JOIN store_product sp ON s.upc = sp.upc JOIN product p ON sp.id_product = p.id_product WHERE `check`.print_date < ? AND p.id_product = ? GROUP BY sp.id_product, p.product_name;";
-        params = [endDate, productId];
+    } else if (startDate && productUpc) {
+        sql = "SELECT sp.upc, p.product_name, SUM(s.product_number) AS total_units_sold FROM `check` JOIN sale s ON `check`.check_number = s.check_number JOIN store_product sp ON s.upc = sp.upc JOIN product p ON sp.id_product = p.id_product WHERE `check`.print_date > ? AND sp.upc = ? GROUP BY sp.upc, p.product_name;";
+        params = [startDate, productUpc];
+    } else if (endDate && productUpc) {
+        sql = "SELECT sp.upc, p.product_name, SUM(s.product_number) AS total_units_sold FROM `check` JOIN sale s ON `check`.check_number = s.check_number JOIN store_product sp ON s.upc = sp.upc JOIN product p ON sp.id_product = p.id_product WHERE `check`.print_date < ? AND sp.upc = ? GROUP BY sp.upc, p.product_name;";
+        params = [endDate, productUpc];
     } else if (startDate) {
-        sql = "SELECT sp.id_product, p.product_name, SUM(s.product_number) AS total_units_sold FROM `check` JOIN sale s ON `check`.check_number = s.check_number JOIN store_product sp ON s.upc = sp.upc JOIN product p ON sp.id_product = p.id_product WHERE `check`.print_date > ? GROUP BY sp.id_product, p.product_name;";
+        sql = "SELECT sp.upc, p.product_name, SUM(s.product_number) AS total_units_sold FROM `check` JOIN sale s ON `check`.check_number = s.check_number JOIN store_product sp ON s.upc = sp.upc JOIN product p ON sp.id_product = p.id_product WHERE `check`.print_date > ? GROUP BY sp.upc, p.product_name;";
         params = [startDate];
     } else if (endDate) {
-        sql = "SELECT sp.id_product, p.product_name, SUM(s.product_number) AS total_units_sold FROM `check` JOIN sale s ON `check`.check_number = s.check_number JOIN store_product sp ON s.upc = sp.upc JOIN product p ON sp.id_product = p.id_product WHERE `check`.print_date < ? GROUP BY sp.id_product, p.product_name;";
+        sql = "SELECT sp.upc, p.product_name, SUM(s.product_number) AS total_units_sold FROM `check` JOIN sale s ON `check`.check_number = s.check_number JOIN store_product sp ON s.upc = sp.upc JOIN product p ON sp.id_product = p.id_product WHERE `check`.print_date < ? GROUP BY sp.upc, p.product_name;";
         params = [endDate];
-    } else if (productId) {
-        sql = "SELECT sp.id_product, p.product_name, SUM(s.product_number) AS total_units_sold FROM `check` JOIN sale s ON `check`.check_number = s.check_number JOIN store_product sp ON s.upc = sp.upc JOIN product p ON sp.id_product = p.id_product WHERE p.id_product = ? GROUP BY sp.id_product, p.product_name;";
-        params = [productId];
-    }else {
+    } else if (productUpc) {
+        sql = "SELECT sp.upc, p.product_name, SUM(s.product_number) AS total_units_sold FROM `check` JOIN sale s ON `check`.check_number = s.check_number JOIN store_product sp ON s.upc = sp.upc JOIN product p ON sp.id_product = p.id_product WHERE sp.upc = ? GROUP BY sp.upc, p.product_name;";
+        params = [productUpc];
+    } else {
         sql = "SELECT SUM(s.product_number) AS total_units_sold FROM `check` JOIN sale s ON `check`.check_number = s.check_number JOIN store_product sp ON s.upc = sp.upc JOIN product p ON sp.id_product = p.id_product;";
     }
 
@@ -654,6 +672,7 @@ app.get('/checkProducts', (req, res) => {
         return res.json(data);
     });
 });
+
 
 app.get('/sumCheck', (req, res) => {
     const startDate = req.query.startDate;
@@ -726,6 +745,25 @@ app.get('/customersStatistics', (req, res) => {
         return res.json(data);
     });
 });
+
+app.get("/employee/statistics", (req, res) => {
+    sql =
+      "SELECT employee.id_employee, employee.empl_name, employee.empl_surname, employee.empl_patronymic,s.product_number, COUNT(ch.check_number) AS checks_count, COALESCE(SUM(ch.sum_total + ch.vat), 0) AS total_sum FROM `employee` INNER JOIN `check` AS ch ON ch.id_employee = employee.id_employee INNER JOIN sale AS s ON ch.check_number = s.check_number AND s.product_number >= 2 GROUP BY employee.id_employee, employee.empl_name, employee.empl_surname, employee.empl_patronymic,s.product_number;";
+    db.query(sql, (err, data) => {
+      if (err) return res.json(err);
+      return res.json(data);
+    });
+  });
+
+  app.get("/check/statistics", (req, res) => {
+    sql =
+      "SELECT ch1.check_number, ch1.sum_total, ch1.id_employee, c2.category_name FROM `check` AS ch1 INNER JOIN sale ON ch1.check_number = sale.check_number INNER JOIN store_product ON store_product.UPC = sale.UPC INNER JOIN product ON product.id_product = store_product.id_product INNER JOIN category AS c2 ON c2.category_number = product.category_number WHERE c2.category_name = 'Dairy';";
+    db.query(sql, (err, data) => {
+      if (err) return res.json(err);
+      return res.json(data);
+    });
+  });
+  
 
 app.get('/custCategory', (req, res) => {
     const category = req.query.category;

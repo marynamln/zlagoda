@@ -340,6 +340,21 @@ function Employee({ managerInfo }) {
         .catch(err => console.log(err));
     };
 
+    const [statisticsData, setStatisticsData] = useState([]);
+    const [statistics, setStatistics] = useState(false);
+
+    const handleStatistics = () => {
+        fetch('http://localhost:8081/employee/statistics')
+        .then((res) => res.json())
+        .then((data) => {
+            console.log(data);
+            setStatisticsData(data);
+            setStatistics(true);
+        })
+        .catch((err) => console.log(err));
+    };
+
+
     return (
         <div className="cart-employee container">
             <div className="employee-header" onChange={handleCategoryChange}>  
@@ -496,7 +511,39 @@ function Employee({ managerInfo }) {
                     </tbody>
                 </table>
             </div>
-        </div>
+
+            <button className='statistics' onClick={handleStatistics}>Statistics</button>
+            {statistics && (
+                <div>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>id</th>
+                        <th>Name</th>
+                        <th>Surname</th>
+                        <th>Patronymic</th>
+                        <th>Product number</th>
+                        <th>Checks count</th>
+                        <th>Total sum</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {statisticsData.map((d, i) => (
+                        <tr key={i}>
+                        <td>{d.id_employee}</td>
+                        <td>{d.empl_name}</td>
+                        <td>{d.empl_surname}</td>
+                        <td>{d.empl_patronymic}</td>
+                        <td>{d.product_number}</td>
+                        <td>{d.checks_count}</td>
+                        <td>{d.total_sum}</td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+                </div>
+            )}
+            </div>
     );
 }
 

@@ -27,7 +27,7 @@ function Cheks() {
         .then(data => setEmployees(data))
         .catch(err => console.log(err));
 
-        fetch('http://localhost:8081/products')
+        fetch('http://localhost:8081/productsInStore')
         .then(res => res.json())
         .then(data => setProducts(data))
         .catch(err => console.log(err));
@@ -37,11 +37,10 @@ function Cheks() {
         .then(data => setTotalSum(data))
         .catch(err => console.log(err));
 
-        fetch(`http://localhost:8081/checkProducts?startDate=${startDateProduct}&endDate=${endDateProduct}&productId=${selectedProduct}`)
+        fetch(`http://localhost:8081/checkProducts?startDate=${startDateProduct}&endDate=${endDateProduct}&productUpc=${selectedProduct}`)
         .then(res => res.json())
         .then(data => {
             setTotalSumProduct(data);
-            setProductName(data[0].product_name);
         })
         .catch(err => console.log(err));
     }, []);
@@ -110,11 +109,17 @@ function Cheks() {
     };
 
     const handleSearchProducts = () => {
-        fetch(`http://localhost:8081/checkProducts?startDate=${startDateProduct}&endDate=${endDateProduct}&productId=${selectedProduct}`)
+        fetch(`http://localhost:8081/checkProducts?startDate=${startDateProduct}&endDate=${endDateProduct}&productUpc=${selectedProduct}`)
         .then(res => res.json())
         .then(data => {
             setTotalSumProduct(data);
-            setProductName(data[0].product_name);
+            if(selectedProduct == "") {
+                setProductName("All products");
+            }
+            else {
+                const prName = products.find(prod => prod.upc === selectedProduct);
+                setProductName(prName.product_name);
+            }
         })
         .catch(err => console.log(err));
     };
@@ -133,14 +138,32 @@ function Cheks() {
         setShowModal(false);
     };
 
+    const [statisticsData, setStatisticsData] = useState([]);
+    const [statistics, setStatistics] = useState(false);
+
+    const handleStatistics = () => {
+        fetch('http://localhost:8081/check/statistics')
+        .then((res) => res.json())
+        .then((data) => {
+            setStatisticsData(data);
+            setStatistics(true);
+        })
+        .catch((err) => console.log(err));
+    };
+
+
     return (
     <div className="cheks-container container">
         <div className="employee-header">
+            <p><strong>Get information about all checks created by a specific cashier for a specific period time:</strong></p>
+        </div>
+
+        <div className="employee-header">
                 <label className="input-date">Start date: </label>
-                <input className="input-d" type="date" id="start" value={startDate} onChange={e => setStartDate(e.target.value)}/>
+                <input className="input-d" type="date" id="start" value={startDate} onChange={(e) => setStartDate(e.target.value)}/>
                 <label className="input-date">End date: </label>
-                <input className="input-d" type="date" id="end" value={endDate} onChange={e => setEndDate(e.target.value)}/>
-                <select className="input-cashier" value={selectedEmployee} onChange={e => setSelectedEmployee(e.target.value)}>
+                <input className="input-d" type="date" id="end" value={endDate} onChange={(e) => setEndDate(e.target.value)}/>
+                <select className="input-cashier" value={selectedEmployee} onChange={(e) => setSelectedEmployee(e.target.value)}>
                     <option value="">All cashiers</option>
                     {employees.map(employee => (
                         <option key={employee.id_employee} value={employee.id_employee}>
@@ -155,15 +178,19 @@ function Cheks() {
             <hr className='line'></hr>
 
             <div className="employee-header">
+                <p><strong>Determine the total number of units of a certain product sold for a certain price time:</strong></p>
+            </div>
+
+            <div className="employee-header">
                 <label className="input-date">Start date: </label>
-                <input className="input-d" type="date" id="start" value={startDateProduct} onChange={e => setStartDateProduct(e.target.value)}/>
+                <input className="input-d" type="date" id="start" value={startDateProduct} onChange={(e) => setStartDateProduct(e.target.value)}/>
                 <label className="input-date">End date: </label>
-                <input className="input-d" type="date" id="end" value={endDateProduct} onChange={e => setEndDateProduct(e.target.value)}/>
-                <select className="input-product" value={selectedProduct} onChange={e => setSelectedProduct(e.target.value)}>
+                <input className="input-d" type="date" id="end" value={endDateProduct} onChange={(e) => setEndDateProduct(e.target.value)}/>
+                <select className="input-product" value={selectedProduct} onChange={(e) => setSelectedProduct(e.target.value)}>
                     <option value="">All products</option>
                     {products.map(products => (
-                        <option key={products.id_product} value={products.id_product}>
-                            {`${products.id_product} - ${products.product_name}`}
+                        <option key={products.upc} value={products.upc}>
+                            {`${products.upc} - ${products.product_name} - prom ${products.promotional_product}`}
                         </option>
                     ))}
                 </select>
@@ -180,8 +207,8 @@ function Cheks() {
         <hr className='line'></hr>
         
         <div className="employee-header">
-            <label className="input-date">Sum total: {totalSum[0]?.sum} </label>
-            <label className="input-date">Amount product : {productName ? productName : "All products"} : {totalSumProduct[0]?.total_units_sold} </label>
+            <label className="input-date">Sum total: {totalSum[0]?.sum || 0} </label>
+            <label className="input-date">Amount product : {productName ? productName : "All products"} : {totalSumProduct[0] ? totalSumProduct[0].total_units_sold : 0} </label>
         </div>
         <div>
             <table>
@@ -241,6 +268,33 @@ function Cheks() {
                 </div>
             </div>
         )}
+        
+        <button className='statistics' onClick={handleStatistics}>Statistics</button>
+            {statistics && (
+                <div>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Check number</th>
+                        <th>Total sum</th>
+                        <th>Id employee</th>
+                        <th>Category name</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {statisticsData.map((d, i) => (
+                        <tr key={i}>
+                        <td>{d.check_number}</td>
+                        <td>{d.sum_total}</td>
+                        <td>{d.id_employee}</td>
+                        <td>{d.category_name}</td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+                </div>
+            )}
+
     </div>
     );
   }

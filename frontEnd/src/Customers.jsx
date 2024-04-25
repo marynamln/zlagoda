@@ -108,12 +108,8 @@ function Customers() {
         .catch(err => console.log(err));
     };
 
-    const handlePercentChange = (e) => {
-        setPercent(e.target.value);
-    };
-
     const searchCustomersByPercent = () => {
-        fetch(`http://localhost:8081/customers?percent=${percent}`)
+        fetch(`http://localhost:8081/customersPercent?percent=${percent}`)
         .then(res => res.json())
         .then(data => {
             setData(data);
@@ -250,14 +246,14 @@ function Customers() {
     return (
         <div className="cart-employee container">
             <div className="employee-header">  
-                <input className="input" type="number" placeholder="Enter percent" value={percent} onChange={handlePercentChange}></input>
+                <input className="input" type="text" placeholder="Enter percent" value={percent} onChange={(e) => setPercent(e.target.value)}></input>
                 <button className="search-button" onClick={searchCustomersByPercent}>Search</button> 
             </div>
 
             <hr className='line'></hr>
 
             <div className="employee-header">  
-                <input className="input" type="number" min={0} placeholder="Card number" value={card} onChange={(e) => setCard(e.target.value)}></input>
+                <input className="input" type="text" placeholder="Card number" value={card} onChange={(e) => setCard(e.target.value)}></input>
                 <input className="input" type="text" placeholder="Surname" value={surname} onChange={(e) => setSurname(e.target.value)}></input>
                 <input className="input" type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)}></input>
                 <input className="input" type="text" placeholder="Patronymic" value={patronymic} onChange={(e) => setPatronymic(e.target.value)}></input>
