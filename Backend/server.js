@@ -764,6 +764,7 @@ app.get("/employee/statistics", (req, res) => {
     });
   });
 
+
 app.get('/custCategory', (req, res) => {
     const category = req.query.category;
 
