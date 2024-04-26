@@ -198,8 +198,8 @@ function Product() {
       <hr className='line'></hr>
 
       <div className="employee-header">
-        <input className="input-product" type="text" placeholder="New product name" value={newProductName} onChange={(e) => setNewProductName(e.target.value)}></input>
-        <input className="input-characteristics" type="text" placeholder="Characteristics" value={newProductCharacteristics} onChange={(e) => setNewProductCharacteristics(e.target.value)}></input>
+        <input className="input-product" type="text" placeholder="New product name" value={newProductName} onChange={(e) => setNewProductName(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}></input>
+        <input className="input-characteristics" type="text" placeholder="Characteristics" value={newProductCharacteristics} onChange={(e) => setNewProductCharacteristics(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}></input>
         <select value={newProductCategory} onChange={(e) => setNewProductCategory(e.target.value)}>
         <option value="Select">Select category</option>
             {categories.map((d, i) => (
@@ -236,7 +236,7 @@ function Product() {
                             <td>{d.id_product}</td>
                             <td>
                                 {d.isEditing ? 
-                                (<input className="input-categoty" type="text" value={editName} onChange={(e) => setEditName(e.target.value)}/>) 
+                                (<input className="input-categoty" type="text" value={editName} onChange={(e) => setEditName(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}/>) 
                                 : 
                                 (
                                     d.product_name
@@ -244,7 +244,7 @@ function Product() {
                             </td>
                             <td>
                                 {d.isEditing ? 
-                                (<input className="input-categoty" type="text" value={editCharacteristics} onChange={(e) => setEditCharacteristics(e.target.value)}/>) 
+                                (<input className="input-categoty" type="text" value={editCharacteristics} onChange={(e) => setEditCharacteristics(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}/>) 
                                 : 
                                 (
                                     d.characteristics

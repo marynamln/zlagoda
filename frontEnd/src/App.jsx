@@ -423,7 +423,7 @@ function CategoryFilter({
           <button
             className="btn btn-all-categories"
             onClick={() => {
-              if (currentCategory === "ptoduct") {
+              if (currentCategory === "product") {
                 setProduct(false);
               } else if (currentCategory === "products-in-store") {
                 setProductInStore(false);
@@ -446,7 +446,9 @@ function CategoryFilter({
         <li className="log-out">
           <button
             className="btn btn-all-categories"
-            onClick={() => { setIsLoggedIn(false); setIsLoggedInCashier(false); }}
+            onClick={() => { 
+              setIsLoggedIn(false); 
+              setIsLoggedInCashier(false); }}
           >
             Log out
           </button>

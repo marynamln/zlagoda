@@ -61,8 +61,6 @@ function Employee({ managerInfo }) {
 
         setEditDateBirth(formattedDate);
         setEditDateStart(formattedDateStart);
-        // setEditDateBirth(updatedData[index].date_of_birth);
-        // setEditDateStart(updatedData[index].date_of_start);
     };
 
     const handleSave = (id) => {
@@ -354,6 +352,9 @@ function Employee({ managerInfo }) {
         .catch((err) => console.log(err));
     };
 
+    const handleCloseStatistics = () => {
+        setStatistics(false);
+    };
 
     return (
         <div className="cart-employee container">
@@ -375,9 +376,9 @@ function Employee({ managerInfo }) {
             <hr className='line'></hr>
 
             <div className="employee-header">  
-                <input className="input" type="text" placeholder="Surname" value={surnameNew} onChange={(e) => setSurnameNew(e.target.value)}></input>
-                <input className="input" type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)}></input>
-                <input className="input" type="text" placeholder="Patronymic" value={patronymic} onChange={(e) => setPatronymic(e.target.value)}></input>
+                <input className="input" type="text" placeholder="Surname" value={surnameNew} onChange={(e) => setSurnameNew(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}></input>
+                <input className="input" type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}></input>
+                <input className="input" type="text" placeholder="Patronymic" value={patronymic} onChange={(e) => setPatronymic(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}></input>
                 <select className="input" value={role} onChange={(e) => setRole(e.target.value)}>
                     <option value="select">Select role</option>
                     <option value="manager">manager</option>
@@ -385,8 +386,8 @@ function Employee({ managerInfo }) {
                 </select>
                 <input className="input" type="number" min={1} placeholder="Salary" value={salary} onChange={(e) => setSalary(e.target.value)}></input>
                 <input className="input" type="tel" placeholder="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)}></input>
-                <input className="input" type="text" placeholder="City" value={city} onChange={(e) => setCity(e.target.value)}></input>
-                <input className="input" type="text" placeholder="Street" value={street} onChange={(e) => setStreet(e.target.value)}></input>
+                <input className="input" type="text" placeholder="City" value={city} onChange={(e) => setCity(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}></input>
+                <input className="input" type="text" placeholder="Street" value={street} onChange={(e) => setStreet(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}></input>
                 <input className="input" type="text" placeholder="Zip code" value={zip} onChange={(e) => setZip(e.target.value)}></input>
             </div>
 
@@ -433,19 +434,19 @@ function Employee({ managerInfo }) {
                             <td>{d.id_employee}</td>
                             <td>
                             {d.isEditing ?
-                                (<input className="input" type="text" value={editSurname} onChange={(e) => setEditSurname(e.target.value)}/>
+                                (<input className="input" type="text" value={editSurname} onChange={(e) => setEditSurname(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}/>
                                 ) : (d.empl_surname)
                                 }     
                             </td>
                             <td>
                             {d.isEditing ?
-                                (<input className="input" type="text" value={editName} onChange={(e) => setEditName(e.target.value)}/>
+                                (<input className="input" type="text" value={editName} onChange={(e) => setEditName(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}/>
                                 ) : (d.empl_name)
                                 }     
                             </td>
                             <td>
                             {d.isEditing ?
-                                (<input className="input" type="text" value={editPatronymic} onChange={(e) => setEditPatronymic(e.target.value)}/>
+                                (<input className="input" type="text" value={editPatronymic} onChange={(e) => setEditPatronymic(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}/>
                                 ) : (d.empl_patronymic)
                                 }     
                             </td>
@@ -480,13 +481,13 @@ function Employee({ managerInfo }) {
                             </td>
                             <td>
                             {d.isEditing ?
-                                (<input className="input" type="text" value={editCity} onChange={(e) => setEditCity(e.target.value)}/>
+                                (<input className="input" type="text" value={editCity} onChange={(e) => setEditCity(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}/>
                                 ) : (d.city)
                                 }     
                             </td>
                             <td>
                             {d.isEditing ?
-                                (<input className="input" type="text" value={editStreet} onChange={(e) => setEditStreet(e.target.value)}/>
+                                (<input className="input" type="text" value={editStreet} onChange={(e) => setEditStreet(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}/>
                                 ) : (d.street)
                                 }     
                             </td>
@@ -512,7 +513,8 @@ function Employee({ managerInfo }) {
                 </table>
             </div>
 
-            <button className='statistics' onClick={handleStatistics}>Statistics</button>
+            {!statistics && <button className='statistics' onClick={handleStatistics}>Statistics</button>}
+            {statistics && <button className='statistics' onClick={handleCloseStatistics}>Close statistics</button>}
             {statistics && (
                 <div>
                 <table>

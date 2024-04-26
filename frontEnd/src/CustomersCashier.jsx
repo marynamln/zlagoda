@@ -228,12 +228,12 @@ function CustomersCashier() {
 
             <div className="employee-header">  
                 <input className="input" type="number" min={0} placeholder="Card number" value={card} onChange={(e) => setCard(e.target.value)}></input>
-                <input className="input" type="text" placeholder="Surname" value={surname} onChange={(e) => setSurname(e.target.value)}></input>
-                <input className="input" type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)}></input>
-                <input className="input" type="text" placeholder="Patronymic" value={patronymic} onChange={(e) => setPatronymic(e.target.value)}></input>
+                <input className="input" type="text" placeholder="Surname" value={surname} onChange={(e) => setSurname(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}></input>
+                <input className="input" type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}></input>
+                <input className="input" type="text" placeholder="Patronymic" value={patronymic} onChange={(e) => setPatronymic(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}></input>
                 <input className="input" type="tel" placeholder="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)}></input>
-                <input className="input" type="text" placeholder="City" value={city} onChange={(e) => setCity(e.target.value)}></input>
-                <input className="input" type="text" placeholder="Street" value={street} onChange={(e) => setStreet(e.target.value)}></input>
+                <input className="input" type="text" placeholder="City" value={city} onChange={(e) => setCity(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}></input>
+                <input className="input" type="text" placeholder="Street" value={street} onChange={(e) => setStreet(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}></input>
                 <input className="input" type="text" placeholder="Zip code" value={zip} onChange={(e) => setZip(e.target.value)}></input>
                 <input className="input" type="number" min={1} placeholder="Percent" value={percentNew} onChange={(e) => setPercentNew(e.target.value)}></input>
                 <button className="add-button" onClick={handleAdd}>Add customer</button>
@@ -267,19 +267,19 @@ function CustomersCashier() {
                             <td>{d.card_number}</td>
                             <td>
                             {d.isEditing ?
-                                (<input className="input" type="text" value={editSurname} onChange={(e) => setEditSurname(e.target.value)}/>
+                                (<input className="input" type="text" value={editSurname} onChange={(e) => setEditSurname(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}/>
                                 ) : (d.cust_surname)
                                 }     
                             </td>
                             <td>
                             {d.isEditing ?
-                                (<input className="input" type="text" value={editName} onChange={(e) => setEditName(e.target.value)}/>
+                                (<input className="input" type="text" value={editName} onChange={(e) => setEditName(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}/>
                                 ) : (d.cust_name)
                                 }     
                             </td>
                             <td>
                             {d.isEditing ?
-                                (<input className="input" type="text" value={editPatronymic} onChange={(e) => setEditPatronymic(e.target.value)}/>
+                                (<input className="input" type="text" value={editPatronymic} onChange={(e) => setEditPatronymic(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}/>
                                 ) : (d.cust_patronymic)
                                 }     
                             </td>
@@ -291,13 +291,13 @@ function CustomersCashier() {
                             </td>
                             <td>
                             {d.isEditing ?
-                                (<input className="input" type="text" value={editCity} onChange={(e) => setEditCity(e.target.value)}/>
+                                (<input className="input" type="text" value={editCity} onChange={(e) => setEditCity(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}/>
                                 ) : (d.city)
                                 }     
                             </td>
                             <td>
                             {d.isEditing ?
-                                (<input className="input" type="text" value={editStreet} onChange={(e) => setEditStreet(e.target.value)}/>
+                                (<input className="input" type="text" value={editStreet} onChange={(e) => setEditStreet(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}/>
                                 ) : (d.street)
                                 }     
                             </td>

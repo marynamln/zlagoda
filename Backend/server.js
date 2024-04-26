@@ -757,13 +757,12 @@ app.get("/employee/statistics", (req, res) => {
 
   app.get("/check/statistics", (req, res) => {
     sql =
-      "SELECT ch1.check_number, ch1.sum_total, ch1.id_employee, c2.category_name FROM `check` AS ch1 INNER JOIN sale ON ch1.check_number = sale.check_number INNER JOIN store_product ON store_product.UPC = sale.UPC INNER JOIN product ON product.id_product = store_product.id_product INNER JOIN category AS c2 ON c2.category_number = product.category_number WHERE c2.category_name = 'Dairy';";
+      "SELECT * FROM `check` WHERE NOT EXISTS( SELECT * FROM `sale` WHERE check.check_number=sale.check_number AND sale.upc NOT IN(SELECT upc FROM `store_product` st LEFT OUTER JOIN `product` p ON st.id_product = p.id_product LEFT OUTER JOIN `category` c ON p.category_number= c.category_number WHERE category_name IN ('Dairy') ) );";
     db.query(sql, (err, data) => {
       if (err) return res.json(err);
       return res.json(data);
     });
   });
-  
 
 app.get('/custCategory', (req, res) => {
     const category = req.query.category;

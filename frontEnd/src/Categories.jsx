@@ -122,8 +122,7 @@ function Categories() {
     };    
 
     const handleAddCategory = () => {
-        const formattedCategoryName = newCategoryName.charAt(0).toUpperCase() + newCategoryName.slice(1);
-        fetch(`http://localhost:8081/categories?categoryName=${formattedCategoryName}`, {
+        fetch(`http://localhost:8081/categories?categoryName=${newCategoryName}`, {
             method: 'POST',
         })
         .then(res => {
@@ -149,7 +148,7 @@ function Categories() {
     return (
         <div className="cart-employee container">
             <div className="employee-header">
-                <input className="input-category" type="text" placeholder="New category name" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)}></input>
+                <input className="input-category" type="text" placeholder="New category name" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}></input>
                 <button className="add-button" onClick={handleAddCategory}>Add category</button>
                 <button className="print-button" onClick={handlePrint}>Print information</button>
                 <button className="sort-button" onClick={sortByCategoryName}>Sort by category name</button>
@@ -170,7 +169,7 @@ function Categories() {
                             <td>{d.category_number}</td>
                             <td>
                                 {d.isEditing ? 
-                                (<input className="input-categoty" type="text" value={editName} onChange={(e) => setEditName(e.target.value)}/>) 
+                                (<input className="input-categoty" type="text" value={editName} onChange={(e) => setEditName(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}/>) 
                                 : 
                                 (
                                     d.category_name

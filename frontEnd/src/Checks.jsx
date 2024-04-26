@@ -151,6 +151,9 @@ function Cheks() {
         .catch((err) => console.log(err));
     };
 
+    const handleCloseStatistics = () => {
+        setStatistics(false);
+    };
 
     return (
     <div className="cheks-container container">
@@ -269,25 +272,30 @@ function Cheks() {
             </div>
         )}
         
-        <button className='statistics' onClick={handleStatistics}>Statistics</button>
+        {!statistics && <button className='statistics' onClick={handleStatistics}>Statistics</button>}
+        {statistics && <button className='statistics' onClick={handleCloseStatistics}>Close statistics</button>}
             {statistics && (
                 <div>
                 <table>
                     <thead>
                     <tr>
                         <th>Check number</th>
-                        <th>Total sum</th>
-                        <th>Id employee</th>
-                        <th>Category name</th>
+                        <th>Card number</th>
+                        <th>Print date</th>
+                        <th>Sum total</th>
+                        <th>VAT</th>
+                        <th>ID employee</th>
                     </tr>
                     </thead>
                     <tbody>
                     {statisticsData.map((d, i) => (
                         <tr key={i}>
                         <td>{d.check_number}</td>
+                        <td>{d.card_number}</td>
+                        <td>{d.print_date}</td>
                         <td>{d.sum_total}</td>
+                        <td>{d.vat}</td>
                         <td>{d.id_employee}</td>
-                        <td>{d.category_name}</td>
                         </tr>
                     ))}
                     </tbody>
