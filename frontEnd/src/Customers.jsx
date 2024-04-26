@@ -330,7 +330,7 @@ function Customers() {
                             </td>
                             <td>
                             {d.isEditing ?
-                                (<input className="input" type="number" min={0} value={editZip} onChange={(e) => setEditZip(e.target.value)}/>
+                                (<input className="input" type="text" value={editZip} onChange={(e) => setEditZip(e.target.value)}/>
                                 ) : (d.zip_code)
                                 }     
                             </td>

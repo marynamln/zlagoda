@@ -8,11 +8,11 @@ function ProductInStore() {
     const [selectedCategory, setSelectedCategory] = useState("All Categories");
     const [upc, setUpc] = useState('');
     const [products, setProducts] = useState([]);
-    const [newProductID, setNewProductID] = useState([]);
-    const [newProductUPC, setNewProductUPC] = useState([]);
-    const [newProductPrice, setNewProductPrice] = useState([]);
-    const [newProductNumber, setNewProductNumber] = useState([]);
-    const [newProductProm, setNewProductProm] = useState([]);
+    const [newProductID, setNewProductID] = useState('');
+    const [newProductUPC, setNewProductUPC] = useState('');
+    const [newProductPrice, setNewProductPrice] = useState('');
+    const [newProductNumber, setNewProductNumber] = useState('');
+    
     const [editedData, setEditedData] = useState([...sortedData]);
     const [editName, setEditName] = useState(''); 
     const [editPrice, setEditPrice] = useState('');
@@ -267,7 +267,6 @@ function ProductInStore() {
             setNewProductID('');
             setNewProductPrice('');
             setNewProductNumber('');
-            setNewProductProm('');
         })
         .catch(err => console.log(err.message));
 
